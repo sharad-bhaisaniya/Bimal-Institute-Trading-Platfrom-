@@ -1,0 +1,35 @@
+:root {
+  /* Vibrant Neon Green Theme Colors (From BimalInstitute) */
+  --primary: #74b723;
+  --primary-dark: #74970a;
+  --primary-hover: #c9ff33;
+  --primary-light: rgba(189, 255, 0, 0.2);
+  /* Glow effect color */
+
+  --secondary: #66ca34;
+  --accent: #FFFFFF;
+
+  --success: #00C853;
+  --warning: #FFC107;
+  --danger: #FF5252;
+
+  /* Deep Dark Backgrounds */
+  --bg-dark: #050505;
+  /* BimalInstitute background */
+  --bg-darker: #000000;
+  --bg-card: rgba(15, 15, 15, 0.8);
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #B5B5B5;
+  --text-muted: #60646C;
+  /* From theme.ts textSecondary */
+
+  --border: #1f1f1f;
+  --border-light: rgba(255, 255, 255, 0.05);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}

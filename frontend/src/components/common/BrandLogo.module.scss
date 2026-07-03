@@ -1,0 +1,39 @@
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(168, 255, 62, 0.08);
+  box-shadow: 0 0 15px rgba(168, 255, 62, 0.15);
+  border: 1px solid rgba(168, 255, 62, 0.1);
+}
+
+.textWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.brandTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.25px;
+  line-height: 1.2;
+}
+
+.brandSubtitle {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}

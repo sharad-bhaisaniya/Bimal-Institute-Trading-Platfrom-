@@ -1,0 +1,80 @@
+/* Custom react-toastify overrides for Bimal Institute theme */
+:root {
+  --toastify-color-dark: #0B0A0F;
+  --toastify-color-error: var(--primary);
+  --toastify-color-success: var(--primary);
+  --toastify-toast-width: 560px;
+  --toastify-font-family: var(--font-family);
+  --toastify-text-color-dark: var(--text-secondary);
+}
+
+.Toastify__toast-theme--dark {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(168, 255, 62, 0.02);
+  padding: 16px 20px 16px 24px;
+}
+
+.Toastify__toast-body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.Toastify__toast-icon {
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 10px;
+  margin-right: 5px;
+  padding-right: 28px;
+
+  border-right: 1px solid rgba(168, 255, 62, 0.3);
+}
+
+.Toastify__close-button {
+  color: var(--text-secondary);
+  opacity: 0.7;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+  color: #fff;
+}
+
+.Toastify__progress-bar {
+  background: var(--primary);
+  opacity: 0.2;
+}
+
+/* Custom Message Component Styles */
+.custom-toast-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 0;
+}
+
+.custom-toast-title {
+  color: var(--primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.custom-toast-message {
+  color: #a0a0a0;
+  font-size: 0.6rem;
+  margin: 0;
+  line-height: 1.4;
+}

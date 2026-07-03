@@ -1,0 +1,24 @@
+# Course Management System Tasks
+
+- `[ ]` Phase 1: Core Foundation (The Basics)
+  - `[ ]` Backend: Create `Category` Model, Controller, Routes
+  - `[ ]` Backend: Create `Tag` Model, Controller, Routes
+  - `[ ]` Backend: Create `Instructor` Model, Controller, Routes
+  - `[ ]` Backend: Create `Course` Model, Controller, Routes (Basic CRUD + Soft Delete)
+  - `[ ]` Frontend: Setup Category Management Views (Admin)
+  - `[ ]` Frontend: Setup Tag Management Views (Admin)
+  - `[ ]` Frontend: Setup Instructor Management Views (Admin)
+  - `[ ]` Frontend: Setup Course Management List View (Admin)
+  - `[ ]` Frontend: Implement Course Creation Flow (Steps 1-3)
+- `[ ]` Phase 2: Curriculum Builder (Modules & Lessons)
+  - `[ ]` Backend: Create `Module`, `Lesson`, `LessonContent` Models, Controllers, Routes
+  - `[ ]` Frontend: Implement Steps 4-5 of Course Creation (Builder)
+- `[ ]` Phase 3: Advanced Content (Quizzes & Assignments)
+  - `[ ]` Backend: Create `Quiz`, `Question`, `Assignment` Models, Controllers, Routes
+  - `[ ]` Frontend: Implement Step 7 of Course Creation
+- `[ ]` Phase 4: Access, Subscriptions & Batches
+  - `[ ]` Backend: Create Access mapping models & logic
+  - `[ ]` Frontend: Access control UI
+- `[ ]` Phase 5: Student Experience & Analytics
+  - `[ ]` Backend: Analytics, Tracking, Certificates
+  - `[ ]` Frontend: Dashboards, Student views

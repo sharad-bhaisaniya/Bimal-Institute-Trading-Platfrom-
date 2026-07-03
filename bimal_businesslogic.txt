@@ -1,0 +1,89 @@
+# Bimal Institute - Mobile App Business Logic & Feature Breakdown
+
+## 1. Core Concept & Vision
+**App Name:** Bimal Institute
+**Tagline:** "Building Traders, Not Just Students"
+**Niche:** Financial Markets, Trading Education, and Live Market Tools.
+
+The app is an ecosystem that transitions a user from a "learner" to a "professional trader". It uses a strict **Role-Based Architecture** to alter the user experience based on their expertise and goals.
+
+## 2. Role Separation Logic (The Heart of the App)
+The app dynamically changes its UI and features based on the user's role: `student` or `trader`. 
+
+### A. Student Role (Learning Phase)
+- **Focus:** Education, training, course completion, and basic trade logging.
+- **Navigation Tabs:** Dashboard | Learn | Journal | AI Coach | Profile
+- **Key Features Available:**
+  - **Learning Progress:** Track course module completion (e.g., "Advanced Price Action").
+  - **Live Classes:** Alerts for upcoming live sessions (e.g., "Options Greek - Batch Alpha").
+  - **Student Stats:** Attendance %, Batch Rank, Win Rate, Monthly PnL.
+
+### B. Trader Role (Professional Phase)
+- **Focus:** Live market execution, advanced tools, and performance tracking (Education modules are hidden).
+- **Navigation Tabs:** Dashboard | Journal | Profile (with future scope for Live Markets/Signals)
+- **Key Features Available:**
+  - **Distraction-Free UI:** Courses and student metrics are completely hidden.
+  - **Advanced Stats:** Focus heavily on Win Rate and Monthly PnL.
+  - **Market Updates:** Promo banners for Bootcamps (e.g., Crypto & Forex Mastery) and Live Signals.
+
+## 3. Core App Modules
+
+### 1. Dashboard (The Hub)
+- Personalized welcome (e.g., "Welcome back, [Name]").
+- Real-time stat cards (Win Rate, PnL, Attendance).
+- Promotional Banners (managed dynamically, e.g., Bootcamp registrations).
+- Quick glimpse of Recent Trades and upcoming Live Classes.
+
+### 2. Trade Journal (Crucial Feature)
+- Users log their daily trades.
+- Captures details: Instrument (e.g., BANKNIFTY 45000 CE), Position (Long/Short), PnL, Execution Time, Risk-Reward (RR) ratio, and outcome (Hit Stoploss/Target).
+- Used to calculate overall Win Rate and Monthly PnL.
+
+### 3. AI Coach (Automated Mentor)
+- Scans the user's Trade Journal to provide behavioral insights.
+- Example alert: *"Risk Management Alert - You've hit your max loss limit in 2 of your last 5 trades. Consider reducing your position sizing."*
+
+### 4. Learn & Live Classes
+- Video courses structured by modules.
+- Scheduled Live Classes (Webinars) specific to batches.
+
+### 5. Profile & Settings
+- Manages User KYC (critical for financial apps).
+- Learning preferences, subscriptions, payments, and security settings.
+
+---
+
+## 4. Admin Panel Requirements (What you need to build)
+Based on the mobile app's logic, your Admin Panel must have the following modules:
+
+### 1. User & Role Management
+- View all registered users.
+- **Crucial:** Ability to change a user's role (`student` <-> `trader`). 
+- View individual user performance (Win Rate, PnL, Journal entries).
+- **KYC Verification System:** Approve or reject submitted KYC documents.
+
+### 2. Course & Content Management (LMS)
+- **Course Builder:** Create courses, add modules, upload videos/materials.
+- **Live Classes:** Schedule live sessions, assign them to specific "Batches", and push links/alerts to the Student Dashboard.
+
+### 3. Events & Banners Management
+- **Promo Banners:** Upload images and set redirect links for the Dashboard banners (e.g., "Crypto Bootcamp").
+- Manage event registrations.
+
+### 4. Financials & Subscriptions
+- Track user payments, active subscriptions, and subscription tiers.
+- Manage access limits (e.g., denying access if payment fails).
+
+### 5. Push Notifications & Signals (For Traders)
+- Send custom notifications.
+- Push live market updates or trade signals specifically targeting the `trader` user base.
+
+### 6. AI & Analytics Dashboard
+- View aggregated data: How many users are in profit/loss?
+- Most traded instruments.
+- (Optional) Configure the rules for the AI Coach alerts.
+
+---
+
+**Prompt for ChatGPT/Gemini:** 
+"I am building a web-based Admin Panel (React/Next.js & Node/Python) for the mobile app described above. Based on this business logic, please suggest a database schema, the necessary API endpoints, and a UI/UX layout structure for the Admin Panel sidebar."
