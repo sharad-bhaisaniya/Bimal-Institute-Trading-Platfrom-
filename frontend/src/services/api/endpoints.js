@@ -102,5 +102,14 @@ export const endpoints = {
     update: (id) => `/subscription-plans/${id}`,
     toggle: (id) => `/subscription-plans/${id}/toggle`,
     delete: (id) => `/subscription-plans/${id}/delete`,
+  },
+  chats: {
+    conversations: '/chats/conversations',
+    messages: (userId) => `/chats/${userId}/messages`,
+    send: '/chats/send',
+    markAsRead: (chatId) => `/chats/${chatId}/read`,
+    superAdmin: '/chats/super-admin/info',
+    updateOnlineStatus: '/chats/online',
+    setTypingStatus: '/chats/typing',
   }
 };

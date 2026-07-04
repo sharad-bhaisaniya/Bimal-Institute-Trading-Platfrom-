@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Navigate, NavLink, useNavigate } from 'react-router-dom';
 import styles from './DashboardLayout.module.scss';
+import './dashboard-shared.scss';
 import { motion } from 'framer-motion';
 import BackgroundBubbles from '../components/common/BackgroundBubbles';
 import { FiBell, FiSettings, FiSearch, FiLogOut, FiMenu, FiHome, FiUsers, FiShield, FiChevronDown, FiChevronRight, FiKey, FiBookOpen, FiPlayCircle, FiCreditCard } from 'react-icons/fi';
@@ -239,7 +240,7 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} dashboardGlobal`}>
       <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
       <div className={styles.mainContent}>
         <Header user={user} onLogout={handleLogout} onSettingsClick={() => navigate('/dashboard/settings')} />

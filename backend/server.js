@@ -26,6 +26,8 @@ const mediaRoutes = require('./routes/media.routes');
 const courseRoutes = require('./routes/course.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const subscriptionPlanRoutes = require('./routes/subscriptionPlan.routes');
+const kycRoutes = require('./routes/kyc.routes');
+const chatRoutes = require('./routes/chat.routes');
 const { errorHandler, notFound } = require('./middlewares/error.middleware');
 
 // Serve static files from the uploads directory
@@ -46,6 +48,8 @@ app.use('/api/v1/blogs', blogRoutes);
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/subscription-plans', subscriptionPlanRoutes);
+app.use('/api/v1/kyc', kycRoutes);
+app.use('/api/v1/chats', chatRoutes);
 
 // Error Middlewares
 app.use(notFound);

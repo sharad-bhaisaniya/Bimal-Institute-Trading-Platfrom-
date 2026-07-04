@@ -14,7 +14,11 @@ exports.getUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).populate('role').select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    res.status(200).json({ data: user });
+    
+    const KycVerification = require('../models/KycVerification');
+    const kyc = await KycVerification.findOne({ user: user._id }).sort({ createdAt: -1 });
+    
+    res.status(200).json({ data: user, kyc });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching user', error });
   }

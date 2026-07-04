@@ -9,6 +9,7 @@ import Register from './pages/auth/Register';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardHome from './pages/dashboard/home/DashboardHome';
 import Users from './pages/dashboard/users/Users';
+import UserDetails from './pages/dashboard/users/UserDetails';
 import Roles from './pages/dashboard/roles/Roles';
 import RoleForm from './pages/dashboard/roles/RoleForm';
 import Settings from './pages/dashboard/settings/Settings';
@@ -28,6 +29,16 @@ import YouTubeImport from './pages/dashboard/courses/YouTubeImport';
 import NotificationCenter from './pages/dashboard/notifications/NotificationCenter';
 import SubscriptionPlans from './pages/dashboard/subscription/SubscriptionPlans';
 import SubscriptionPlansList from './pages/dashboard/subscription/SubscriptionPlansList';
+import UserLayout from './layouts/UserLayout';
+import Home from './pages/public/Home';
+import About from './pages/public/About';
+import Courses from './pages/public/Courses';
+import Contact from './pages/public/Contact';
+import Kyc from './pages/public/Kyc';
+import KycProcess from './pages/kyc/KycProcess';
+import Chat from './pages/public/chat/Chat';
+import AdminChat from './pages/dashboard/chat/AdminChat';
+import TradingJournal from './pages/trading-journal/TradingJournal';
 
 function App() {
   return (
@@ -39,6 +50,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
           <Route path="users" element={<Users />} />
+          <Route path="users/:id" element={<UserDetails />} />
           <Route path="roles" element={<Roles />} />
           <Route path="roles/create" element={<RoleForm />} />
           <Route path="roles/edit/:id" element={<RoleForm />} />
@@ -59,6 +71,7 @@ function App() {
           <Route path="courses/builder/:id" element={<CourseBuilder />} />
           <Route path="courses/import-youtube" element={<YouTubeImport />} />
           <Route path="notifications" element={<NotificationCenter />} />
+          <Route path="chat" element={<AdminChat />} />
 
 
           <Route path="/dashboard/subscriptions" element={<SubscriptionPlansList />} />
@@ -72,9 +85,20 @@ function App() {
 
         <Route path="/trader-dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
+          {/* <Route path="journal" element={<TradingJournal />} /> */}
         </Route>
 
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<UserLayout />}>
+          <Route index element={<Home />} />
+          <Route path="about" element={<About />} />
+          <Route path="courses" element={<Courses />} />
+          <Route path="contact" element={<Contact />} />
+          <Route path="kyc" element={<Kyc />} />
+          <Route path="chat" element={<Chat />} />
+        </Route>
+
+            <Route path="journal" element={<TradingJournal />} />
+        <Route path="/kyc-process" element={<KycProcess />} />
       </Routes>
       <ToastContainer
         position="top-right"

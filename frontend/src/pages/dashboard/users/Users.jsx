@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMoreVertical, FiSearch, FiX, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { FiMoreVertical, FiSearch, FiX, FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import styles from './Users.module.scss';
 import Button from '../../../components/common/Button';
@@ -10,6 +11,7 @@ import { roleService } from '../../../services/api/role.service';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
   const [roles, setRoles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -151,8 +153,9 @@ const Users = () => {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                      <button className={styles.actionBtn} onClick={() => openModal(user)}><FiEdit2 /></button>
-                      <button className={styles.actionBtn} onClick={() => handleDelete(user._id)}><FiTrash2 /></button>
+                      <button className={styles.actionBtn} onClick={() => navigate(`/dashboard/users/${user._id}`)} title="View Details"><FiEye /></button>
+                      <button className={styles.actionBtn} onClick={() => openModal(user)} title="Edit"><FiEdit2 /></button>
+                      <button className={styles.actionBtn} onClick={() => handleDelete(user._id)} title="Delete"><FiTrash2 /></button>
                     </div>
                   </td>
                 </motion.tr>

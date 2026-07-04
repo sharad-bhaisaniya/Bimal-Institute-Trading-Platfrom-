@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 
-const digioSettingSchema = new mongoose.Schema({
-  clientId: { type: String, required: true },
-  clientSecret: { type: String, required: true },
-  templateName: { type: String }, // Optional depending on Digio template requirements
-  isActive: { type: Boolean, default: false }
+const digioCredentialSchema = new mongoose.Schema({
+  client_id:     { type: String, required: true },
+  client_secret: { type: String, required: true },
+  api_base_url:  { type: String, default: 'https://ext.digio.in' },
+  workflow_name: { type: String },
+  isActive:      { type: Boolean, default: false },
 }, { timestamps: true });
 
-module.exports = mongoose.model('DigioSetting', digioSettingSchema);
+module.exports = mongoose.model('DigioCredential', digioCredentialSchema);

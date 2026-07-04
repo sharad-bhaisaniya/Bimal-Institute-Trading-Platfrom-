@@ -1,0 +1,31 @@
+.animatedBtn {
+  background: linear-gradient(90deg, #d4ff5c 0%, #4d8f14 50%, #d4ff5c 100%);
+  background-size: 200% auto;
+  background-position: 0 center;
+  color: #000;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  padding: 12px 28px;
+  font-family: 'Jost', sans-serif;
+
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  // text-transform: uppercase;
+
+  &:hover {
+    background-position: 100% center;
+    transform: translateY(-2px);
+    // box-shadow: 0 5px 15px rgba(212, 255, 92, 0.4);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}

@@ -12,7 +12,7 @@ const inputStyle = {
   fontSize: '0.9rem', outline: 'none', width: '100%', boxSizing: 'border-box', transition: 'border-color 0.2s',
 };
 
-const emptyForm = { clientId: '', clientSecret: '', baseUrl: 'https://ext.digio.in', isActive: true };
+const emptyForm = { client_id: '', client_secret: '', api_base_url: 'https://ext.digio.in:444', workflow_name: '', isActive: true };
 
 const DigioCredentials = () => {
   const [config, setConfig] = useState(null);
@@ -50,9 +50,10 @@ const DigioCredentials = () => {
 
   const openEdit = () => {
     setForm({
-      clientId: config.clientId || '',
-      clientSecret: '', // don't pre-fill secret
-      baseUrl: config.baseUrl || 'https://ext.digio.in',
+      client_id: config.client_id || config.clientId || '',
+      client_secret: '', // don't pre-fill secret
+      api_base_url: config.api_base_url || config.baseUrl || 'https://ext.digio.in',
+      workflow_name: config.workflow_name || config.templateName || '',
       isActive: config.isActive !== undefined ? config.isActive : true,
     });
     setEditMode(true);
@@ -63,14 +64,14 @@ const DigioCredentials = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!form.clientId || (!editMode && !form.clientSecret)) {
+    if (!form.client_id || (!editMode && !form.client_secret)) {
       toast.error('Please fill all required fields');
       return;
     }
     setSaving(true);
     try {
       const payload = { ...form };
-      if (editMode && !payload.clientSecret) delete payload.clientSecret;
+      if (editMode && !payload.client_secret) delete payload.client_secret;
 
       if (editMode && config?._id) {
         await settingService.updateDigio(config._id, payload);
@@ -137,18 +138,22 @@ const DigioCredentials = () => {
                 {editMode ? <><FiEdit2 size={16} color="#ff64c8" /> Edit Digio Configuration</> : <><FiPlus size={16} color="#ff64c8" /> Add Digio Configuration</>}
               </h3>
               <form onSubmit={handleSave}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0 1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1rem' }}>
                   <div style={fieldStyle}>
                     <label style={labelStyle}>Client ID *</label>
-                    <input style={inputStyle} name="clientId" placeholder="DIDxxxxxxxx" value={form.clientId} onChange={handleChange} onFocus={e => e.target.style.borderColor = 'rgba(255, 100, 200, 0.4)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
+                    <input style={inputStyle} name="client_id" placeholder="DIDxxxxxxxx" value={form.client_id} onChange={handleChange} onFocus={e => e.target.style.borderColor = 'rgba(255, 100, 200, 0.4)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
                   </div>
                   <div style={fieldStyle}>
                     <label style={labelStyle}>Client Secret{editMode ? ' (leave blank to keep current)' : ' *'}</label>
-                    <input style={inputStyle} name="clientSecret" type="password" placeholder="••••••••" value={form.clientSecret} onChange={handleChange} onFocus={e => e.target.style.borderColor = 'rgba(255, 100, 200, 0.4)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
+                    <input style={inputStyle} name="client_secret" type="password" placeholder="••••••••" value={form.client_secret} onChange={handleChange} onFocus={e => e.target.style.borderColor = 'rgba(255, 100, 200, 0.4)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
                   </div>
                   <div style={fieldStyle}>
                     <label style={labelStyle}>Base URL</label>
-                    <input style={inputStyle} name="baseUrl" placeholder="https://ext.digio.in" value={form.baseUrl} onChange={handleChange} onFocus={e => e.target.style.borderColor = 'rgba(255, 100, 200, 0.4)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
+                    <input style={inputStyle} name="api_base_url" placeholder="https://ext.digio.in" value={form.api_base_url} onChange={handleChange} onFocus={e => e.target.style.borderColor = 'rgba(255, 100, 200, 0.4)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
+                  </div>
+                  <div style={fieldStyle}>
+                    <label style={labelStyle}>Workflow Name (Template)</label>
+                    <input style={inputStyle} name="workflow_name" placeholder="E.g., KYC_FLOW" value={form.workflow_name} onChange={handleChange} onFocus={e => e.target.style.borderColor = 'rgba(255, 100, 200, 0.4)'} onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '1.5rem', margin: '0.25rem 0 1.25rem' }}>
@@ -183,7 +188,7 @@ const DigioCredentials = () => {
               </div>
               <div>
                 <div style={{ color: '#fff', fontWeight: 600, fontSize: '1rem' }}>
-                  {config.clientId} <span style={{ color: '#555', fontSize: '0.8rem', fontWeight: 400 }}>({config.baseUrl})</span>
+                  {config.client_id || config.clientId} <span style={{ color: '#555', fontSize: '0.8rem', fontWeight: 400 }}>({config.api_base_url || config.baseUrl})</span>
                 </div>
                 <div style={{ color: '#666', fontSize: '0.82rem', marginTop: '3px' }}>Digio Configuration</div>
               </div>

@@ -10,7 +10,9 @@ const userSchema = new mongoose.Schema({
   profileImage: { type: String, default: null },
   isActive: { type: Boolean, default: true },
   lastLogin: { type: Date },
-  refreshToken: { type: String }
+  refreshToken: { type: String },
+  isOnline: { type: Boolean, default: false },
+  lastSeen: { type: Date }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
