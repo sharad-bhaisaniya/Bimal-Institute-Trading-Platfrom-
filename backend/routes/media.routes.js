@@ -4,7 +4,7 @@ const { protect } = require('../middlewares/auth.middleware');
 const { getAllMedia, deleteMedia } = require('../controllers/media.controller');
 
 // Media library routes
-router.get('/', protect, getAllMedia);
+router.get('/', getAllMedia);
 router.delete('/:id', protect, deleteMedia);
 
 module.exports = router;

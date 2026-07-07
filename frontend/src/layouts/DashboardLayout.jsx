@@ -4,7 +4,7 @@ import styles from './DashboardLayout.module.scss';
 import './dashboard-shared.scss';
 import { motion } from 'framer-motion';
 import BackgroundBubbles from '../components/common/BackgroundBubbles';
-import { FiBell, FiSettings, FiSearch, FiLogOut, FiMenu, FiHome, FiUsers, FiShield, FiChevronDown, FiChevronRight, FiKey, FiBookOpen, FiPlayCircle, FiCreditCard } from 'react-icons/fi';
+import { FiBell, FiSettings, FiSearch, FiLogOut, FiMenu, FiHome, FiUsers, FiShield, FiChevronDown, FiChevronRight, FiKey, FiBookOpen, FiPlayCircle, FiCreditCard, FiBriefcase, FiMessageSquare } from 'react-icons/fi';
 import BrandLogo from '../components/common/BrandLogo';
 import NotificationBell from '../components/common/NotificationBell';
 import { BASE_URL } from '../services/api/api';
@@ -101,6 +101,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => (
         ]}
       />
       <NavItem to="/dashboard/roles" icon={FiShield} label="Roles" isCollapsed={isCollapsed} />
+      <NavItem to="/dashboard/brokers" icon={FiBriefcase} label="Trade Broker" isCollapsed={isCollapsed} />
+
       <NavItem
         to="/dashboard/courses"
         icon={FiPlayCircle}
@@ -178,6 +180,13 @@ const Header = ({ user, onLogout, onSettingsClick }) => (
     </div>
     <div className={styles.headerRight}>
       <NotificationBell />
+
+      <button
+        className={styles.iconBtn} onClick={onSettingsClick}
+        title="Chat"
+      >
+        <FiMessageSquare />
+      </button>
       <button className={styles.iconBtn} onClick={onSettingsClick} title="Settings">
         <FiSettings />
       </button>

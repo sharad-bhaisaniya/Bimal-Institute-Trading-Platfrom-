@@ -1,231 +1,323 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { FiArrowLeft, FiPlus, FiX } from 'react-icons/fi';
-import { toast } from 'react-toastify';
+import { FiPlus, FiX, FiArrowLeft } from 'react-icons/fi';
+import { subscriptionPlanService } from '../../../services/api/subscription/subscriptionPlan.service';
 
-import { subscriptionPlanService } from '../../../services/api/subscriptionPlan.service';
-import Button from '../../../components/common/Button';
-import Input from '../../../components/common/Input';
-import Select from '../../../components/common/Select';
-import { CustomToast } from '../../../components/common/CustomToast';
-
-// Yup Validation mapping perfectly to your Mongoose schema
-const schema = yup.object().shape({
-    name: yup.string().required('Plan name is required'),
-    description: yup.string(),
-    price: yup.number().typeError('Price must be a number').min(0, 'Minimum price is 0').required('Price is required'),
-    currency: yup.string().oneOf(['INR', 'USD', 'EUR', 'GBP']).required('Currency is required'),
-    duration: yup.number().typeError('Duration must be a number').min(0, 'Minimum duration is 0').required('Duration is required'),
-    durationType: yup.string().oneOf(['days', 'months', 'years', 'lifetime']).required('Duration Type is required'),
-    badge: yup.string(),
-    badgeColor: yup.string().default('#bfff00'),
-    trialDays: yup.number().typeError('Trial days must be a number').default(0),
-    maxUsers: yup.number().typeError('Max users must be a number').default(-1),
-    sortOrder: yup.number().typeError('Sort order must be a number').default(0)
+// Validation schema with Yup (Cleaned up limits & access configurations)
+const schema = yup.object({
+    planName: yup.string().required('Plan name is required'),
+    description: yup.string().default(''),
+    price: yup
+        .number()
+        .typeError('Price must be a number')
+        .required('Price is required'),
+    billingCycle: yup
+        .string()
+        .oneOf(['monthly', 'quarterly', 'half_yearly', 'yearly', 'lifetime'], 'Invalid billing cycle')
+        .required('Billing cycle is required'),
+    displayOrder: yup
+        .number()
+        .typeError('Priority order must be a number')
+        .oneOf([0, 1, 2, 3], 'Invalid priority level')
+        .default(0),
 });
 
-const SubscriptionPlanForm = () => {
+// Common Modern Styles
+const styles = {
+    container: { padding: '2rem', width: '100%', color: '#fff' },
+    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' },
+    title: { fontSize: '1.75rem', fontWeight: 700, margin: 0 },
+    subtitle: { color: '#888', margin: '0.25rem 0 0 0', fontSize: '0.85rem' },
+    mainGrid: { display: 'flex', gap: '2rem', alignItems: 'flex-start' },
+    leftCol: { flex: '1', display: 'flex', flexDirection: 'column', gap: '1.5rem' },
+    rightCol: { width: '520px', display: 'flex', flexDirection: 'column', gap: '1.5rem', flexShrink: 0 },
+    formGroup: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
+    label: { fontSize: '0.85rem', color: '#888', fontWeight: 500 },
+    input: {
+        width: '100%',
+        backgroundColor: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '0.5rem',
+        padding: '0.75rem 1rem',
+        color: '#fff',
+        fontSize: '0.9rem',
+        outline: 'none',
+        transition: 'border 0.2s',
+    },
+    select: {
+        width: '100%',
+        backgroundColor: '#111',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '0.5rem',
+        padding: '0.75rem 1rem',
+        color: '#fff',
+        fontSize: '0.9rem',
+        outline: 'none',
+    },
+    errorText: { color: '#ff6b6b', fontSize: '0.75rem', margin: '0.25rem 0 0 0' },
+    card: {
+        background: 'rgba(255,255,255,0.02)',
+        padding: '1.25rem',
+        borderRadius: '0.75rem',
+        border: '1px solid rgba(255,255,255,0.05)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.25rem'
+    },
+    checkboxLabel: { display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#eee', cursor: 'pointer', fontSize: '0.9rem' },
+    btnPrimary: {
+        background: 'var(--primary, #bfff00)',
+        color: '#000',
+        fontWeight: 600,
+        padding: '0.7rem 1.5rem',
+        borderRadius: '0.5rem',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        fontSize: '0.9rem'
+    }
+};
+
+function SubscriptionPlanForm({ onSuccess }) {
     const { id } = useParams();
-    const isEditing = !!id;
+    const targetId = id;
     const navigate = useNavigate();
 
-    // Dynamic state list to track explicit array items for features list
+    const [loading, setLoading] = useState(false);
+    const [apiError, setApiError] = useState('');
     const [featuresList, setFeaturesList] = useState([]);
-    const [currentFeature, setCurrentFeature] = useState('');
+    const [newFeature, setNewFeature] = useState('');
 
-    const { register, handleSubmit, control, setValue, formState: { errors, isSubmitting } } = useForm({
+    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
         resolver: yupResolver(schema),
         defaultValues: {
-            currency: 'INR',
-            durationType: 'months',
-            trialDays: 0,
-            maxUsers: -1,
-            sortOrder: 0,
-            badgeColor: '#bfff00'
+            planName: '',
+            description: '',
+            price: 0,
+            billingCycle: 'monthly',
+            displayOrder: 0,
+            isActive: true,
+            isFeatured: false
         }
     });
 
+    // Fetch operational rules
     useEffect(() => {
-        if (isEditing) {
-            const fetchPlan = async () => {
-                try {
-                    const res = await subscriptionPlanService.getPlanById(id);
-                    const plan = res.data;
-                    if (plan) {
-                        setValue('name', plan.name);
-                        setValue('description', plan.description);
-                        setValue('price', plan.price);
-                        setValue('currency', plan.currency);
-                        setValue('duration', plan.duration);
-                        setValue('durationType', plan.durationType);
-                        setValue('badge', plan.badge);
-                        setValue('badgeColor', plan.badgeColor);
-                        setValue('trialDays', plan.trialDays);
-                        setValue('maxUsers', plan.maxUsers);
-                        setValue('sortOrder', plan.sortOrder);
-                        if (plan.features) setFeaturesList(plan.features);
+        if (targetId) {
+            setLoading(true);
+            subscriptionPlanService.getById(targetId)
+                .then(res => {
+                    const data = res.data?.data || res.data;
+                    if (data) {
+                        reset({
+                            planName: data.name || data.planName || '',
+                            description: data.description || '',
+                            price: data.price || 0,
+                            billingCycle: data.plan_duration || data.billingCycle || 'monthly',
+                            displayOrder: data.display_order !== undefined ? data.display_order : 0,
+                            isActive: data.is_active !== undefined ? data.is_active : (data.isActive !== undefined ? data.isActive : true),
+                            isFeatured: data.is_featured !== undefined ? data.is_featured : (data.isFeatured !== undefined ? data.isFeatured : false)
+                        });
+                        setFeaturesList(data.features || []);
                     }
-                } catch (err) {
-                    toast.error(<CustomToast title="Error" message={err.response?.data?.message || 'Failed to fetch subscription plan'} />);
-                    navigate('/dashboard/subscriptions');
-                }
-            };
-            fetchPlan();
+                })
+                .catch(err => {
+                    console.error(err);
+                    setApiError(err.response?.data?.message || err.message || 'Failed to load details.');
+                })
+                .finally(() => setLoading(false));
+        } else {
+            reset({
+                planName: '',
+                description: '',
+                price: 0,
+                billingCycle: 'monthly',
+                displayOrder: 0,
+                isActive: true,
+                isFeatured: false
+            });
+            setFeaturesList([]);
         }
-    }, [id, isEditing, setValue, navigate]);
+    }, [targetId, reset]);
 
-    // Fixed: Handles adding the feature and clears the local state element
-    const handleAddFeature = (e) => {
-        if (e) e.preventDefault(); // Strongly prevent form side-effects
-        if (!currentFeature.trim()) return;
-        setFeaturesList([...featuresList, currentFeature.trim()]);
-        setCurrentFeature('');
+    const addFeature = (e) => {
+        if (e) e.preventDefault();
+        const feature = newFeature.trim();
+        if (!feature) return;
+        setFeaturesList(prev => [...prev, feature]);
+        setNewFeature('');
     };
 
-    // Fixed: Intercept Enter key inside feature input box
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault(); // Stop form from trying to submit entirely
-            handleAddFeature();
-        }
-    };
-
-    const handleRemoveFeature = (index) => {
-        setFeaturesList(featuresList.filter((_, i) => i !== index));
+    const removeFeature = (index) => {
+        setFeaturesList(prev => prev.filter((_, i) => i !== index));
     };
 
     const onSubmit = async (data) => {
-        try {
-            const payload = { ...data, features: featuresList };
+        setApiError('');
+        setLoading(true);
 
-            if (isEditing) {
-                await subscriptionPlanService.updatePlan(id, payload);
-                toast.success(<CustomToast title="Success" message="Plan updated successfully" />);
+        const payload = {
+            ...data,
+            name: data.planName,
+            plan_duration: data.billingCycle,
+            display_order: Number(data.displayOrder),
+            is_active: data.isActive,
+            is_featured: data.isFeatured,
+            features: featuresList
+        };
+
+        try {
+            let response;
+            if (targetId) {
+                response = await subscriptionPlanService.update(targetId, payload);
             } else {
-                await subscriptionPlanService.createPlan(payload);
-                toast.success(<CustomToast title="Success" message="Plan created successfully" />);
+                response = await subscriptionPlanService.create(payload);
             }
-            navigate('/dashboard/subscriptions');
-        } catch (error) {
-            toast.error(<CustomToast title="Error" message={error.response?.data?.message || 'Failed to save plan'} />);
+            if (onSuccess) {
+                onSuccess(response);
+            } else {
+                navigate('/dashboard/subscriptions');
+            }
+        } catch (err) {
+            console.error(err);
+            setApiError(err.response?.data?.message || err.message || 'Submission failed');
+        } finally {
+            setLoading(false);
         }
     };
 
-    return (
-        <div style={{ padding: '2rem', width: '100%' }}>
-            <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    if (loading && targetId && featuresList.length === 0) {
+        return (
+            <div style={{ ...styles.container, textAlign: 'center', padding: '4rem', color: '#888' }}>
+                Fetching platform subscription matrix...
+            </div>
+        );
+    }
 
-                {/* Header & Actions */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+    return (
+        <div style={styles.container}>
+            <form onSubmit={handleSubmit(onSubmit)}>
+
+                {/* Dynamic Title Headers */}
+                <div style={styles.header}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <button type="button" onClick={() => navigate('/dashboard/subscriptions')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', width: '40px', height: '40px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <FiArrowLeft size={18} />
                         </button>
                         <div>
-                            <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: 0, color: '#fff' }}>{isEditing ? 'Edit Subscription Plan' : 'Create Subscription Plan'}</h1>
-                            <p style={{ color: '#888', margin: '0.25rem 0 0 0' }}>{isEditing ? 'Modify tier parameters and access privileges' : 'Configure new pricing tier parameters'}</p>
+                            <h1 style={styles.title}>{targetId ? 'Edit Subscription Tier' : 'Deploy Subscription Plan'}</h1>
+                            <p style={styles.subtitle}>Configure runtime parameters, pricing structures, and inclusion parameters.</p>
                         </div>
                     </div>
-
-                    <Button type="submit" isLoading={isSubmitting} style={{ padding: '0.8rem 2.5rem', fontSize: '1.05rem', borderRadius: '0.75rem' }}>
-                        {isEditing ? 'Save Tier Configuration' : 'Publish Plan'}
-                    </Button>
+                    <button type="submit" style={styles.btnPrimary} disabled={isSubmitting || loading}>
+                        {targetId ? 'Update Configurations' : 'Publish Plan'}
+                    </button>
                 </div>
 
-                <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
-                    {/* Left Column: Core Pricing Fields */}
-                    <div style={{ flex: '2', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {apiError && (
+                    <div style={{ ...styles.card, borderColor: '#ff6b6b', color: '#ff6b6b', marginBottom: '1.5rem', padding: '0.75rem' }}>
+                        {apiError}
+                    </div>
+                )}
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem' }}>
-                            <Input label="Plan Name" placeholder="e.g. Enterprise Tier" {...register('name')} error={errors.name?.message} />
-                            <Input label="Base Price" type="number" step="any" placeholder="0.00" {...register('price')} error={errors.price?.message} />
-                            <Controller
-                                name="currency"
-                                control={control}
-                                render={({ field: { onChange, value } }) => (
-                                    <Select
-                                        label="Currency"
-                                        value={value}
-                                        onChange={onChange}
-                                        options={[
-                                            { value: 'INR', label: 'INR (₹)' },
-                                            { value: 'USD', label: 'USD ($)' },
-                                            { value: 'EUR', label: 'EUR (€)' },
-                                            { value: 'GBP', label: 'GBP (£)' }
-                                        ]}
-                                    />
-                                )}
-                            />
+                <div style={styles.mainGrid}>
+
+                    {/* Left Panel: Primary Content Inputs */}
+                    <div style={styles.leftCol}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Plan Title / Name</label>
+                                <input style={styles.input} placeholder="e.g. Premium Pro" {...register('planName')} />
+                                {errors.planName && <p style={styles.errorText}>{errors.planName.message}</p>}
+                            </div>
+
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Base Price</label>
+                                <input style={styles.input} type="number" step="0.01" placeholder="0.00" {...register('price')} />
+                                {errors.price && <p style={styles.errorText}>{errors.price.message}</p>}
+                            </div>
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <Input label="Duration Length" type="number" placeholder="1" {...register('duration')} error={errors.duration?.message} />
-                            <Controller
-                                name="durationType"
-                                control={control}
-                                render={({ field: { onChange, value } }) => (
-                                    <Select
-                                        label="Duration Interval"
-                                        value={value}
-                                        onChange={onChange}
-                                        options={[
-                                            { value: 'days', label: 'Days' },
-                                            { value: 'months', label: 'Months' },
-                                            { value: 'years', label: 'Years' },
-                                            { value: 'lifetime', label: 'Lifetime' }
-                                        ]}
-                                    />
-                                )}
-                            />
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Billing Intervals</label>
+                                <select style={styles.select} {...register('billingCycle')}>
+                                    <option value="monthly">Monthly Plan Cycle</option>
+                                    <option value="quarterly">Quarterly Cycle</option>
+                                    <option value="half_yearly">Half Yearly Cycle</option>
+                                    <option value="yearly">Yearly Absolute Cycle</option>
+                                    <option value="lifetime">Lifetime Access Plan</option>
+                                </select>
+                            </div>
+
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Priority Display Order</label>
+                                <select style={styles.select} {...register('displayOrder')}>
+                                    <option value={0}>0 - High Priority</option>
+                                    <option value={1}>1 - Medium-High Priority</option>
+                                    <option value={2}>2 - Medium Priority</option>
+                                    <option value={3}>3 - Low Priority</option>
+                                </select>
+                                {errors.displayOrder && <p style={styles.errorText}>{errors.displayOrder.message}</p>}
+                            </div>
                         </div>
 
-                        <Input label="Short Description / Subtext" placeholder="Describe the purpose of this package tier..." {...register('description')} error={errors.description?.message} />
-
-                        {/* Feature List Builder section */}
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.85rem', color: '#888', marginBottom: '0.5rem' }}>Tier Entitlements / Features</label>
-                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                                <div style={{ flex: 1 }}>
-                                    <Input
-                                        placeholder="e.g. 24/7 Dedicated Server Access Support"
-                                        value={currentFeature}
-                                        onChange={(e) => setCurrentFeature(e.target.value)}
-                                        onKeyDown={handleKeyDown} // Intercepts the Enter key locally
-                                    />
-                                </div>
-                                <button type="button" onClick={handleAddFeature} style={{ height: '46px', padding: '0 1.25rem', background: 'var(--primary)', color: '#fff', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                    <FiPlus /> Add
-                                </button>
-                            </div>
-
-                            {/* Dynamic Features List Render */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                {featuresList.map((feat, index) => (
-                                    <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', padding: '0.75rem 1rem', borderRadius: '0.5rem' }}>
-                                        <span style={{ color: '#eee', fontSize: '0.9rem', flex: 1 }}>{feat}</span>
-                                        <button type="button" onClick={() => handleRemoveFeature(index)} style={{ background: 'transparent', border: 'none', color: '#ff6b6b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                                            <FiX size={16} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Short Summary Description</label>
+                            <textarea style={{ ...styles.input, minHeight: '120px', resize: 'vertical' }} placeholder="Specify targeted tier user profile..." {...register('description')} />
                         </div>
                     </div>
 
-                    {/* Right Column: Custom Threshold Metadata & Badging System */}
-                    <div style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '1.5rem', flexShrink: 0 }}>
-                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            <Input label="Free Trial Period (Days)" type="number" {...register('trialDays')} error={errors.trialDays?.message} />
-                            <Input label="Max Concurrent Users (-1 = Unlimited)" type="number" {...register('maxUsers')} error={errors.maxUsers?.message} />
-                            <Input label="Interface Sorting Weight" type="number" {...register('sortOrder')} error={errors.sortOrder?.message} />
+                    {/* Right Panel: Features List Builder & Lifecycle Toggles */}
+                    <div style={styles.rightCol}>
+
+                        {/* Features & Tier Inclusion Card */}
+                        <div style={styles.card}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Features & Tier Inclusion Rules</label>
+                                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                    <input
+                                        style={styles.input}
+                                        type="text"
+                                        value={newFeature}
+                                        onChange={e => setNewFeature(e.target.value)}
+                                        placeholder="Add entitlement..."
+                                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addFeature(); } }}
+                                    />
+                                    <button type="button" onClick={addFeature} style={{ ...styles.btnPrimary, padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <FiPlus /> Add
+                                    </button>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '240px', overflowY: 'auto' }}>
+                                    {featuresList.map((feat, idx) => (
+                                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: '0.6rem 1rem', borderRadius: '0.5rem' }}>
+                                            <span style={{ fontSize: '0.85rem', color: '#ddd' }}>{feat}</span>
+                                            <button type="button" onClick={() => removeFeature(idx)} style={{ background: 'transparent', border: 'none', color: '#ff6b6b', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                                <FiX size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
-                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            <Input label="Highlight Tag / Badge" placeholder="e.g. Most Popular" {...register('badge')} error={errors.badge?.message} />
-                            <Input label="Tag Hex Color Hex" type="color" {...register('badgeColor')} error={errors.badgeColor?.message} style={{ height: '40px', padding: '2px', cursor: 'pointer' }} />
+                        {/* Status Configurations Card */}
+                        <div style={styles.card}>
+                            <label style={styles.checkboxLabel}>
+                                <input type="checkbox" {...register('isActive')} style={{ width: '16px', height: '16px', accentColor: '#bfff00' }} />
+                                Active Lifecycle Status
+                            </label>
+
+                            <label style={styles.checkboxLabel}>
+                                <input type="checkbox" {...register('isFeatured')} style={{ width: '16px', height: '16px', accentColor: '#bfff00' }} />
+                                Highlight as Featured Tier
+                            </label>
                         </div>
                     </div>
 
@@ -233,6 +325,6 @@ const SubscriptionPlanForm = () => {
             </form>
         </div>
     );
-};
+}
 
 export default SubscriptionPlanForm;

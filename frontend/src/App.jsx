@@ -39,6 +39,9 @@ import KycProcess from './pages/kyc/KycProcess';
 import Chat from './pages/public/chat/Chat';
 import AdminChat from './pages/dashboard/chat/AdminChat';
 import TradingJournal from './pages/trading-journal/TradingJournal';
+import UserDashboardLayout from './layouts/UserDashboardLayout';
+import Profile from './pages/trading-journal/Profile';
+import BrokerManagement from './pages/dashboard/tradeBroker/BrokerManagement';
 
 function App() {
   return (
@@ -77,6 +80,9 @@ function App() {
           <Route path="/dashboard/subscriptions" element={<SubscriptionPlansList />} />
           <Route path="/dashboard/subscriptions/new" element={<SubscriptionPlans />} />
           <Route path="/dashboard/subscriptions/edit/:id" element={<SubscriptionPlans />} />
+
+          <Route path="/dashboard/brokers" element={<BrokerManagement />} />
+
         </Route>
 
         <Route path="/student-dashboard" element={<DashboardLayout />}>
@@ -85,8 +91,8 @@ function App() {
 
         <Route path="/trader-dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
-          {/* <Route path="journal" element={<TradingJournal />} /> */}
         </Route>
+
 
         <Route path="/" element={<UserLayout />}>
           <Route index element={<Home />} />
@@ -96,8 +102,12 @@ function App() {
           <Route path="kyc" element={<Kyc />} />
           <Route path="chat" element={<Chat />} />
         </Route>
+        <Route path="/user" element={<UserDashboardLayout />}>
+          <Route path="journal" element={<TradingJournal />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
 
-            <Route path="journal" element={<TradingJournal />} />
+
         <Route path="/kyc-process" element={<KycProcess />} />
       </Routes>
       <ToastContainer

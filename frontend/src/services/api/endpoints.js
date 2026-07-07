@@ -93,16 +93,8 @@ export const endpoints = {
     dismiss: (id) => `/notifications/${id}/dismiss`,
   },
 
-  // Add this inside the main endpoints object
-  subscriptionPlans: {
-    getActive: '/subscription-plans',
-    getAll: '/subscription-plans/all',
-    getById: (id) => `/subscription-plans/${id}`,
-    create: '/subscription-plans',
-    update: (id) => `/subscription-plans/${id}`,
-    toggle: (id) => `/subscription-plans/${id}/toggle`,
-    delete: (id) => `/subscription-plans/${id}/delete`,
-  },
+
+
   chats: {
     conversations: '/chats/conversations',
     messages: (userId) => `/chats/${userId}/messages`,
@@ -111,5 +103,60 @@ export const endpoints = {
     superAdmin: '/chats/super-admin/info',
     updateOnlineStatus: '/chats/online',
     setTypingStatus: '/chats/typing',
-  }
+  },
+
+  brokers: {
+    getAll: '/brokers',
+    getActive: '/brokers/active',
+    getById: (id) => `/brokers/${id}`,
+    create: '/brokers',
+    update: (id) => `/brokers/${id}`,
+    updateStatus: (id) => `/brokers/${id}/status`,
+    delete: (id) => `/brokers/${id}`,
+  },
+  trades: {
+    getAll: '/trades',
+    getById: (id) => `/trades/${id}`,
+    create: '/trades',
+    update: (id) => `/trades/${id}`,
+    updateStatus: (id) => `/trades/${id}/status`,
+    delete: (id) => `/trades/${id}`,
+  },
+
+  // Add this inside the main endpoints object
+  subscriptionPlans: {
+    getAll: "/subscription-plans",
+    getById: (id) => `/subscription-plans/${id}`,
+    create: "/subscription-plans",
+    update: (id) => `/subscription-plans/${id}`,
+    delete: (id) => `/subscription-plans/${id}`,
+    updateStatus: (id) => `/subscription-plans/${id}/status`,
+    toggleFeatured: (id) => `/subscription-plans/${id}/featured`,
+  },
+
+  userSubscriptions: {
+    getAll: "/user-subscriptions",
+    getById: (id) => `/user-subscriptions/${id}`,
+    create: "/user-subscriptions",
+    update: (id) => `/user-subscriptions/${id}`,
+    delete: (id) => `/user-subscriptions/${id}`,
+    updateStatus: (id) => `/user-subscriptions/${id}/status`,
+  },
+
+  subscriptionPayments: {
+    getAll: "/subscription-payments",
+    getById: (id) => `/subscription-payments/${id}`,
+    create: "/subscription-payments",
+    update: (id) => `/subscription-payments/${id}`,
+    delete: (id) => `/subscription-payments/${id}`,
+    updateStatus: (id) => `/subscription-payments/${id}/status`,
+  },
+  tradeJournals: {
+    getAll: '/trade-journals',
+    getById: (id) => `/trade-journals/${id}`,
+    create: '/trade-journals',
+    update: (id) => `/trade-journals/${id}`,
+    delete: (id) => `/trade-journals/${id}`,
+  },
+
 };

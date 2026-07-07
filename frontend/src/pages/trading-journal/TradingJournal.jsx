@@ -24,11 +24,11 @@ const TradingJournal = () => {
   if (!hasTrades) {
     return (
       <div className="min-h-screen bg-[#0a0a0a]">
-        <Navbar />
+        {/* <Navbar /> */}
         <EmptyState onAddTrade={() => setIsAddTradeModalOpen(true)} />
-        <AddTradeModal 
-          isOpen={isAddTradeModalOpen} 
-          onClose={() => setIsAddTradeModalOpen(false)} 
+        <AddTradeModal
+          isOpen={isAddTradeModalOpen}
+          onClose={() => setIsAddTradeModalOpen(false)}
         />
       </div>
     );
@@ -36,8 +36,8 @@ const TradingJournal = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <Navbar />
-      
+      {/* <Navbar /> */}
+
       <div className="flex">
         {/* Main Content */}
         <div className="flex-1 p-6 lg:p-8">
@@ -93,10 +93,11 @@ const TradingJournal = () => {
         className="fixed bottom-8 right-8 z-40"
       >
         <Button
-          variant="primary"
-          size="lg"
+          // variant="primary"
+          // size="lg"
           onClick={() => setIsAddTradeModalOpen(true)}
-          className="rounded-full shadow-glow"
+          className=" animatedBtn"
+
         >
           <Plus className="mr-2" size={20} />
           Add Trade
@@ -104,9 +105,9 @@ const TradingJournal = () => {
       </motion.div>
 
       {/* Add Trade Modal */}
-      <AddTradeModal 
-        isOpen={isAddTradeModalOpen} 
-        onClose={() => setIsAddTradeModalOpen(false)} 
+      <AddTradeModal
+        isOpen={isAddTradeModalOpen}
+        onClose={() => setIsAddTradeModalOpen(false)}
       />
     </div>
   );

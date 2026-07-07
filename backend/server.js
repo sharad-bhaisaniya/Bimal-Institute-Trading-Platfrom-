@@ -25,9 +25,20 @@ const blogRoutes = require('./routes/blog.routes');
 const mediaRoutes = require('./routes/media.routes');
 const courseRoutes = require('./routes/course.routes');
 const notificationRoutes = require('./routes/notification.routes');
-const subscriptionPlanRoutes = require('./routes/subscriptionPlan.routes');
 const kycRoutes = require('./routes/kyc.routes');
 const chatRoutes = require('./routes/chat.routes');
+// --- New Trading Journal Routes Imports ---
+const brokerRoutes = require('./routes/broker.routes');
+const tradeRoutes = require('./routes/trade.routes');
+const tradeJournalRoutes = require('./routes/journal/tradeJournal.routes');
+
+// --- Subscription Routes ---
+const subscriptionPlanRoutes = require('./routes/subscription/subscriptionPlan.routes');
+const userSubscriptionRoutes = require('./routes/subscription/userSubscription.routes');
+const subscriptionPaymentRoutes = require('./routes/subscription/subscriptionPayment.routes');
+
+// Ignore favicon requests
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 const { errorHandler, notFound } = require('./middlewares/error.middleware');
 
 // Serve static files from the uploads directory
@@ -47,9 +58,18 @@ app.use('/api/v1/blog-categories', blogCategoryRoutes);
 app.use('/api/v1/blogs', blogRoutes);
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
-app.use('/api/v1/subscription-plans', subscriptionPlanRoutes);
 app.use('/api/v1/kyc', kycRoutes);
 app.use('/api/v1/chats', chatRoutes);
+
+// --- New Trading Journal Endpoints ---
+app.use('/api/v1/brokers', brokerRoutes);
+app.use('/api/v1/trades', tradeRoutes);
+app.use('/api/v1/trade-journals', tradeJournalRoutes);
+
+// --- Subscription Endpoints ---
+app.use('/api/v1/subscription-plans', subscriptionPlanRoutes);
+app.use('/api/v1/user-subscriptions', userSubscriptionRoutes);
+app.use('/api/v1/subscription-payments', subscriptionPaymentRoutes);
 
 // Error Middlewares
 app.use(notFound);
@@ -64,7 +84,7 @@ const generatePermissions = require('./utils/permissionGenerator');
 mongoose.connect(MONGO_URI)
   .then(async () => {
     console.log('Connected to MongoDB');
-    
+
     // Auto-generate permissions dynamically from Express routes
     await generatePermissions(app);
 
