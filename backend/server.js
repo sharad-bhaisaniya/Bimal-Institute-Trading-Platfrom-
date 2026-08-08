@@ -27,10 +27,13 @@ const courseRoutes = require('./routes/course.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const kycRoutes = require('./routes/kyc.routes');
 const chatRoutes = require('./routes/chat.routes');
+const zoomRoutes = require('./routes/zoom.routes');
 // --- New Trading Journal Routes Imports ---
 const brokerRoutes = require('./routes/broker.routes');
 const tradeRoutes = require('./routes/trade.routes');
 const tradeJournalRoutes = require('./routes/journal/tradeJournal.routes');
+const journalNoteRoutes = require('./routes/journal/journalNote.routes');
+const aiAnalyzerRoutes = require('./routes/journal/aiAnalyzer.routes');
 
 // --- Subscription Routes ---
 const subscriptionPlanRoutes = require('./routes/subscription/subscriptionPlan.routes');
@@ -60,11 +63,14 @@ app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/kyc', kycRoutes);
 app.use('/api/v1/chats', chatRoutes);
+app.use('/api/v1/zoom', zoomRoutes);
 
 // --- New Trading Journal Endpoints ---
 app.use('/api/v1/brokers', brokerRoutes);
 app.use('/api/v1/trades', tradeRoutes);
 app.use('/api/v1/trade-journals', tradeJournalRoutes);
+app.use('/api/v1/journal-notes', journalNoteRoutes);
+app.use('/api/v1/ai', aiAnalyzerRoutes);
 
 // --- Subscription Endpoints ---
 app.use('/api/v1/subscription-plans', subscriptionPlanRoutes);

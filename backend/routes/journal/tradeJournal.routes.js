@@ -1,5 +1,6 @@
 // routes/journal/tradeJournal.routes.js
 const express = require('express');
+const { protect } = require('../../middlewares/auth.middleware');
 const router = express.Router();
 const {
     createTradeEntry,
@@ -9,16 +10,15 @@ const {
     deleteTradeEntry
 } = require('../../controllers/journal/tradeJournal.controller');
 
-// Agar user session verification strict karni ho, toh yahan middleware laga sakte hain
-// const { protect } = require('../../middlewares/auth.middleware');
+
 
 router.route('/')
-    .post(createTradeEntry)
-    .get(getAllTradeEntries);
+    .post(protect, createTradeEntry)
+    .get(protect, getAllTradeEntries);
 
 router.route('/:id')
-    .get(getTradeEntryById)
-    .put(updateTradeEntry)
-    .delete(deleteTradeEntry);
+    .get(protect, getTradeEntryById)
+    .put(protect, updateTradeEntry)
+    .delete(protect, deleteTradeEntry);
 
 module.exports = router;

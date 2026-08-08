@@ -111,10 +111,6 @@ const userSubscriptionSchema = new mongoose.Schema(
 
 /* -------------------- Indexes -------------------- */
 
-userSubscriptionSchema.index({ user: 1 });
-userSubscriptionSchema.index({ subscription_plan: 1 });
-userSubscriptionSchema.index({ status: 1 });
-userSubscriptionSchema.index({ payment_status: 1 });
 userSubscriptionSchema.index({ start_date: 1 });
 userSubscriptionSchema.index({ end_date: 1 });
 
@@ -134,18 +130,14 @@ userSubscriptionSchema.virtual("isExpired").get(function () {
 
 /* -------------------- Validation -------------------- */
 
-userSubscriptionSchema.pre("save", function (next) {
+userSubscriptionSchema.pre("save", function () {
     if (
         this.end_date &&
         this.start_date &&
         this.end_date <= this.start_date
     ) {
-        return next(
-            new Error("End date must be greater than start date.")
-        );
+        throw new Error("End date must be greater than start date.");
     }
-
-    next();
 });
 
 const UserSubscription = mongoose.model(

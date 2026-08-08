@@ -10,7 +10,7 @@ const asyncHandler = (fn) => (req, res, next) =>
  * @desc Create a new trade diary entry
  * @route POST /api/trade-journals
  */
-const createTradeEntry = asyncHandler(async (req, res) => {
+const createTradeEntry = asyncHandler(async (req, res, next) => {
     const {
         date,
         symbol,
@@ -20,12 +20,29 @@ const createTradeEntry = asyncHandler(async (req, res) => {
         quantity,
         entryPrice, // UI camelCase fields mapping
         exitPrice,
+        day,
+        segment,
+        tradeType,
+        stopLoss,
+        targetPrice,
+        riskReward,
+        tradeResult,
+        tradeEntryTime,
+        tradeExitTime,
+        remark1,
+        remark2,
+        pnl,
         strategy,
         preTradeEmotion,
         postTradeEmotion,
         mistakeTag,
         notes
     } = req.body;
+
+    // 1. Log req.body and req.user for debugging incoming payload context
+    console.log("=== [CREATE TRADE ENTRY] Incoming Request Debug ===");
+    console.log("req.body:", JSON.stringify(req.body, null, 2));
+    console.log("req.user:", req.user ? JSON.stringify(req.user, null, 2) : "Undefined/Missing (Auth Middleware verification check required)");
 
     // Fallback and user auth handling (Make sure req.user is set via auth middleware)
     const userId = req.user?._id || req.body.user_id;
@@ -48,6 +65,19 @@ const createTradeEntry = asyncHandler(async (req, res) => {
         quantity,
         entry_price: entryPrice,
         exit_price: exitPrice !== undefined && exitPrice !== '' ? exitPrice : null,
+        day,
+        segment,
+        trade_type: tradeType,
+        stop_loss: stopLoss,
+        target_price: targetPrice,
+        risk_reward: riskReward,
+        trade_result: tradeResult,
+        trade_entry_time: tradeEntryTime,
+        trade_exit_time: tradeExitTime,
+        remark_1: remark1,
+        remark_2: remark2,
+        pnl: pnl !== undefined && pnl !== '' ? Number(pnl) : undefined,
+        manual_pnl: pnl !== undefined && pnl !== '',
         strategy_used: strategy,
         pre_trade_emotion: preTradeEmotion,
         post_trade_emotion: postTradeEmotion,
@@ -55,8 +85,30 @@ const createTradeEntry = asyncHandler(async (req, res) => {
         notes
     });
 
-    // Save calculates P&L automatically through the pre-save hook we defined earlier
-    await newTrade.save();
+    // 2. Wrap save execution inside a localized try-catch block for exact database/validation inspection
+    try {
+        // Save calculates P&L automatically through the pre-save hook we defined earlier
+        await newTrade.save();
+    } catch (saveError) {
+        // Log the complete error stack in the server console
+        console.error("=== [CREATE TRADE ENTRY] Database Save Validation Error ===");
+        console.error(saveError.stack || saveError);
+
+        // Collect distinct Mongoose field validation error keys if applicable
+        const validationErrors = saveError.errors
+            ? Object.keys(saveError.errors).reduce((acc, key) => {
+                acc[key] = saveError.errors[key].message;
+                return acc;
+            }, {})
+            : null;
+
+        return res.status(400).json({
+            success: false,
+            message: saveError.message || "Database validation failed while processing the entry.",
+            errors: validationErrors,
+            rawErrorName: saveError.name
+        });
+    }
 
     res.status(201).json({
         success: true,
@@ -140,6 +192,21 @@ const updateTradeEntry = asyncHandler(async (req, res) => {
     const updates = { ...req.body };
     if (req.body.entryPrice !== undefined) updates.entry_price = req.body.entryPrice;
     if (req.body.exitPrice !== undefined) updates.exit_price = req.body.exitPrice === '' ? null : req.body.exitPrice;
+    if (req.body.day !== undefined) updates.day = req.body.day;
+    if (req.body.segment !== undefined) updates.segment = req.body.segment;
+    if (req.body.tradeType !== undefined) updates.trade_type = req.body.tradeType;
+    if (req.body.stopLoss !== undefined) updates.stop_loss = req.body.stopLoss;
+    if (req.body.targetPrice !== undefined) updates.target_price = req.body.targetPrice;
+    if (req.body.riskReward !== undefined) updates.risk_reward = req.body.riskReward;
+    if (req.body.tradeResult !== undefined) updates.trade_result = req.body.tradeResult;
+    if (req.body.tradeEntryTime !== undefined) updates.trade_entry_time = req.body.tradeEntryTime;
+    if (req.body.tradeExitTime !== undefined) updates.trade_exit_time = req.body.tradeExitTime;
+    if (req.body.remark1 !== undefined) updates.remark_1 = req.body.remark1;
+    if (req.body.remark2 !== undefined) updates.remark_2 = req.body.remark2;
+    if (req.body.pnl !== undefined && req.body.pnl !== '') {
+        updates.pnl = Number(req.body.pnl);
+        updates.manual_pnl = true;
+    }
     if (req.body.strategy !== undefined) updates.strategy_used = req.body.strategy;
     if (req.body.preTradeEmotion !== undefined) updates.pre_trade_emotion = req.body.preTradeEmotion;
     if (req.body.postTradeEmotion !== undefined) updates.post_trade_emotion = req.body.postTradeEmotion;

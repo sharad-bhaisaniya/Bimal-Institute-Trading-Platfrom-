@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiMenu, FiHome, FiUsers, FiShield, FiBookOpen, FiPlayCircle, FiSettings } from 'react-icons/fi';
+import { FiMenu, FiHome, FiUsers, FiShield, FiBookOpen, FiPlayCircle, FiSettings, FiAward } from 'react-icons/fi';
 import BrandLogo from '../../../components/common/BrandLogo';
 
 const UserSidebar = ({ isCollapsed, toggleSidebar, navItemComponent: NavItem }) => {
@@ -21,6 +21,7 @@ const UserSidebar = ({ isCollapsed, toggleSidebar, navItemComponent: NavItem }) 
 
             <nav className="flex-1 overflow-y-auto py-4 space-y-1 no-scrollbar">
                 <NavItem to="/user/journal" icon={FiHome} label="Dashboard" isCollapsed={isCollapsed} />
+                <NavItem to="/user/subscriptions" icon={FiAward} label="Subscriptions" isCollapsed={isCollapsed} />
                 <NavItem to="/user/profile" icon={FiSettings} label="Settings" isCollapsed={isCollapsed} />
 
                 <NavItem to="/dashboard/roles" icon={FiShield} label="Roles" isCollapsed={isCollapsed} />

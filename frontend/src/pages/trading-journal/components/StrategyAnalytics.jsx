@@ -28,14 +28,56 @@ const StrategyCard = ({ name, winRate, profit, loss, avgRR }) => (
   </div>
 );
 
-const StrategyAnalytics = () => {
-  const strategies = [
-    { name: 'Breakout', winRate: 68, profit: 28500, loss: 12500, avgRR: '1:2.5' },
-    { name: 'Scalping', winRate: 58, profit: 18200, loss: 15000, avgRR: '1:1.8' },
-    { name: 'Swing', winRate: 72, profit: 32100, loss: 9800, avgRR: '1:2.8' },
-    { name: 'Price Action', winRate: 65, profit: 24500, loss: 14200, avgRR: '1:2.2' },
-    { name: 'EMA', winRate: 62, profit: 19800, loss: 13500, avgRR: '1:2.0' },
-  ];
+const StrategyAnalytics = ({ trades = [] }) => {
+  const strategyStats = {};
+
+  trades.forEach(trade => {
+    const strategyName = trade.strategy_used || trade.strategy || 'Unknown';
+    if (!strategyStats[strategyName]) {
+      strategyStats[strategyName] = {
+        name: strategyName,
+        totalTrades: 0,
+        winningTrades: 0,
+        profit: 0,
+        loss: 0,
+        totalRR: 0,
+        validRRCount: 0,
+      };
+    }
+    const stat = strategyStats[strategyName];
+    stat.totalTrades += 1;
+    
+    if (trade.pnl > 0 || trade.status === 'WIN' || trade.trade_result === 'Target') {
+      stat.winningTrades += 1;
+    }
+    
+    if (trade.pnl > 0) {
+      stat.profit += trade.pnl;
+    } else if (trade.pnl < 0) {
+      stat.loss += Math.abs(trade.pnl);
+    }
+
+    if (trade.risk_reward) {
+      const parts = String(trade.risk_reward).split(':');
+      const val = parts.length === 2 ? parseFloat(parts[1]) : parseFloat(parts[0]);
+      if (!isNaN(val)) {
+        stat.totalRR += val;
+        stat.validRRCount += 1;
+      }
+    }
+  });
+
+  const strategies = Object.values(strategyStats).map(stat => {
+    const winRate = stat.totalTrades > 0 ? Math.round((stat.winningTrades / stat.totalTrades) * 100) : 0;
+    const avgRRVal = stat.validRRCount > 0 ? (stat.totalRR / stat.validRRCount).toFixed(1) : '0.0';
+    return {
+      name: stat.name,
+      winRate: winRate,
+      profit: stat.profit,
+      loss: stat.loss,
+      avgRR: `1:${avgRRVal}`
+    };
+  }).sort((a, b) => b.profit - a.profit);
 
   return (
     <Card>

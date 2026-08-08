@@ -38,71 +38,101 @@ const StatCard = ({ icon: Icon, label, value, change, positive, data }) => (
   </Card>
 );
 
-const HeroStats = () => {
+const HeroStats = ({ trades = [] }) => {
+  const totalTrades = trades.length;
+  const winningTrades = trades.filter(t => t.pnl > 0 || t.status === 'WIN' || t.trade_result === 'Target').length;
+  const losingTrades = trades.filter(t => t.pnl < 0 || t.status === 'LOSS' || t.trade_result === 'Stoploss').length;
+  const winRate = totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(1) : '0.0';
+  
+  const totalProfit = trades.reduce((sum, t) => sum + (t.pnl > 0 ? t.pnl : 0), 0);
+  const totalLoss = trades.reduce((sum, t) => sum + (t.pnl < 0 ? Math.abs(t.pnl) : 0), 0);
+  const netPnL = totalProfit - totalLoss;
+
+  let totalRR = 0;
+  let validRRCount = 0;
+  trades.forEach(t => {
+    if (t.risk_reward) {
+      const parts = String(t.risk_reward).split(':');
+      let val = null;
+      if (parts.length === 2) {
+        val = parseFloat(parts[1]);
+      } else {
+        val = parseFloat(parts[0]);
+      }
+      if (!isNaN(val)) {
+        totalRR += val;
+        validRRCount++;
+      }
+    }
+  });
+  const avgRR = validRRCount > 0 ? (totalRR / validRRCount).toFixed(1) : '0.0';
+
+  const defaultData = Array.from({ length: 10 }, () => ({ value: 0 }));
+
   const stats = [
     {
       icon: BarChart3,
       label: 'Total Trades',
-      value: '247',
-      change: '+12.5%',
+      value: totalTrades.toString(),
+      change: '-',
       positive: true,
-      data: Array.from({ length: 10 }, (_, i) => ({ value: 200 + Math.random() * 50 })),
+      data: defaultData,
     },
     {
       icon: TrendingUp,
       label: 'Winning Trades',
-      value: '156',
-      change: '+8.3%',
+      value: winningTrades.toString(),
+      change: '-',
       positive: true,
-      data: Array.from({ length: 10 }, (_, i) => ({ value: 130 + Math.random() * 30 })),
+      data: defaultData,
     },
     {
       icon: TrendingDown,
       label: 'Losing Trades',
-      value: '91',
-      change: '-4.2%',
+      value: losingTrades.toString(),
+      change: '-',
       positive: false,
-      data: Array.from({ length: 10 }, (_, i) => ({ value: 80 + Math.random() * 20 })),
+      data: defaultData,
     },
     {
       icon: Target,
       label: 'Win Rate',
-      value: '63.2%',
-      change: '+2.1%',
-      positive: true,
-      data: Array.from({ length: 10 }, (_, i) => ({ value: 55 + Math.random() * 15 })),
+      value: `${winRate}%`,
+      change: '-',
+      positive: winRate >= 50,
+      data: defaultData,
     },
     {
       icon: DollarSign,
-      label: 'Month Profit',
-      value: '$12,450',
-      change: '+18.7%',
+      label: 'Total Profit',
+      value: `₹${totalProfit.toLocaleString()}`,
+      change: '-',
       positive: true,
-      data: Array.from({ length: 10 }, (_, i) => ({ value: 10000 + Math.random() * 5000 })),
+      data: defaultData,
     },
     {
       icon: Activity,
-      label: 'Month Loss',
-      value: '$4,230',
-      change: '-12.3%',
+      label: 'Total Loss',
+      value: `₹${totalLoss.toLocaleString()}`,
+      change: '-',
       positive: false,
-      data: Array.from({ length: 10 }, (_, i) => ({ value: 3000 + Math.random() * 2000 })),
+      data: defaultData,
     },
     {
       icon: Award,
       label: 'Avg Risk/Reward',
-      value: '1:2.5',
-      change: '+0.3',
-      positive: true,
-      data: Array.from({ length: 10 }, (_, i) => ({ value: 2 + Math.random() * 1 })),
+      value: `1:${avgRR}`,
+      change: '-',
+      positive: avgRR >= 1.5,
+      data: defaultData,
     },
     {
       icon: Zap,
       label: 'Net P&L',
-      value: '$8,220',
-      change: '+15.4%',
-      positive: true,
-      data: Array.from({ length: 10 }, (_, i) => ({ value: 6000 + Math.random() * 4000 })),
+      value: `₹${netPnL.toLocaleString()}`,
+      change: '-',
+      positive: netPnL >= 0,
+      data: defaultData,
     },
   ];
 

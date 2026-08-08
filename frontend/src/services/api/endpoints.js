@@ -6,10 +6,10 @@ export const endpoints = {
   },
   settings: {
     smtp: {
-      getAll: '/settings/smtp',
-      create: '/settings/smtp',
-      update: (id) => `/settings/smtp/${id}`,
-      delete: (id) => `/settings/smtp/${id}`,
+      getAll: '/smtp',
+      create: '/smtp',
+      update: (id) => `/smtp/${id}`,
+      delete: (id) => `/smtp/${id}`,
     },
     sms: {
       getAll: '/settings/sms',
@@ -35,6 +35,21 @@ export const endpoints = {
       update: (id) => `/settings/youtube/${id}`,
       delete: (id) => `/settings/youtube/${id}`,
     },
+    zoom: {
+      getAll: '/settings/zoom',
+      create: '/settings/zoom',
+      update: (id) => `/settings/zoom/${id}`,
+      delete: (id) => `/settings/zoom/${id}`,
+    },
+  },
+  zoomMeetings: {
+    getAll: '/zoom/meetings',
+    getById: (id) => `/zoom/meeting/${id}`,
+    create: '/zoom/create-meeting',
+    startInstant: '/zoom/start-instant-meeting',
+    getSignature: '/zoom/generate-signature',
+    update: (id) => `/zoom/meeting/${id}`,
+    delete: (id) => `/zoom/meeting/${id}`,
   },
   users: {
     getAll: '/users',
@@ -136,6 +151,7 @@ export const endpoints = {
 
   userSubscriptions: {
     getAll: "/user-subscriptions",
+    getMy: "/user-subscriptions/my",
     getById: (id) => `/user-subscriptions/${id}`,
     create: "/user-subscriptions",
     update: (id) => `/user-subscriptions/${id}`,
@@ -143,6 +159,9 @@ export const endpoints = {
     updateStatus: (id) => `/user-subscriptions/${id}/status`,
   },
 
+  kyc: {
+    status: '/kyc/status',
+  },
   subscriptionPayments: {
     getAll: "/subscription-payments",
     getById: (id) => `/subscription-payments/${id}`,
@@ -150,6 +169,8 @@ export const endpoints = {
     update: (id) => `/subscription-payments/${id}`,
     delete: (id) => `/subscription-payments/${id}`,
     updateStatus: (id) => `/subscription-payments/${id}/status`,
+    createOrder: "/subscription-payments/create-order",
+    verify: "/subscription-payments/verify",
   },
   tradeJournals: {
     getAll: '/trade-journals',
@@ -158,5 +179,15 @@ export const endpoints = {
     update: (id) => `/trade-journals/${id}`,
     delete: (id) => `/trade-journals/${id}`,
   },
+  journalNotes: {
+    getAll: '/journal-notes',
+    getById: (id) => `/journal-notes/${id}`,
+    create: '/journal-notes',
+    update: (id) => `/journal-notes/${id}`,
+    delete: (id) => `/journal-notes/${id}`,
+  },
+  aiAnalyzer: {
+    analyze: '/ai/analyze-trades',
+  }
 
 };

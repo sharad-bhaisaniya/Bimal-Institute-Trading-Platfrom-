@@ -1,4 +1,4 @@
-import api from '../axios'; // Aapki wrapper centralized custom instance configuration file
+import api from '../api'; // Aapki wrapper centralized custom instance configuration file
 import { endpoints } from '../endpoints'; // Target path to endpoints file context
 
 export const tradeJournalService = {

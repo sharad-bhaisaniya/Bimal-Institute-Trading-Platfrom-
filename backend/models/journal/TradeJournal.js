@@ -33,9 +33,8 @@ const tradeJournalSchema = new mongoose.Schema(
 
         broker: {
             type: String,
-            required: true,
-            enum: ['Zerodha', 'Upstox', 'Groww'],
-            default: 'Zerodha',
+            required: [true, "Broker is required"],
+            trim: true,
         },
 
         type: {
@@ -63,11 +62,59 @@ const tradeJournalSchema = new mongoose.Schema(
             min: [0, "Exit price cannot be negative"],
         },
 
+        day: {
+            type: String,
+            trim: true,
+        },
+
+        segment: {
+            type: String,
+            enum: ['Cash', 'Crypto', 'Futures', 'Options'],
+            default: 'Cash',
+        },
+
+        trade_type: {
+            type: String,
+            enum: ['Intraday', 'Delivery'],
+            default: 'Intraday',
+        },
+
+        stop_loss: {
+            type: Number,
+            required: [true, "Stop loss is required"],
+        },
+
+        target_price: {
+            type: Number,
+            required: [true, "Target price is required"],
+        },
+
+        risk_reward: {
+            type: Number,
+        },
+
+        trade_entry_time: {
+            type: String,
+        },
+
+        trade_exit_time: {
+            type: String,
+        },
+
+        remark_1: {
+            type: String,
+            trim: true,
+        },
+
+        remark_2: {
+            type: String,
+            trim: true,
+        },
+
         strategy_used: {
             type: String,
             required: true,
-            enum: ['Breakout', 'Scalping', 'Swing', 'Price Action', 'EMA Cross'],
-            default: 'Price Action',
+            trim: true,
         },
 
         // Trading Psychology & Diary Analysis Metrics
@@ -105,10 +152,21 @@ const tradeJournalSchema = new mongoose.Schema(
             default: 0, // Auto calculated pre-save or pre-response
         },
 
+        manual_pnl: {
+            type: Boolean,
+            default: false,
+        },
+
         status: {
             type: String,
             enum: ['WIN', 'LOSS', 'BREAKEVEN', 'OPEN'],
             default: 'OPEN',
+        },
+
+        trade_result: {
+            type: String,
+            enum: ['Target', 'Stoploss', 'Pending'],
+            default: 'Pending',
         }
     },
     {
@@ -123,25 +181,23 @@ tradeJournalSchema.index({ symbol: 1 });
 tradeJournalSchema.index({ status: 1 });
 
 // Automatically compute P&L and status right before saving the diary document
-tradeJournalSchema.pre('save', function (next) {
-    // If the trade is not closed yet (no exit price), leave it as OPEN
-    if (this.exit_price === null || this.exit_price === undefined) {
-        this.pnl = 0;
-        this.status = 'OPEN';
-        return next();
+tradeJournalSchema.pre('save', async function () {
+    if (!this.manual_pnl) {
+        if (this.exit_price == null) {
+            this.pnl = 0;
+            this.status = 'OPEN';
+            return;
+        }
+
+        if (this.type === 'BUY') {
+            this.pnl = (this.exit_price - this.entry_price) * this.quantity;
+        } else {
+            this.pnl = (this.entry_price - this.exit_price) * this.quantity;
+        }
     }
 
-    // Dynamic Calculation Logic based on Transaction Type
-    if (this.type === 'BUY') {
-        this.pnl = (this.exit_price - this.entry_price) * this.quantity;
-    } else if (this.type === 'SELL') {
-        this.pnl = (this.entry_price - this.exit_price) * this.quantity;
-    }
+    this.pnl = Number(this.pnl.toFixed(2));
 
-    // Clean decimals up to 2 decimal points
-    this.pnl = parseFloat(this.pnl.toFixed(2));
-
-    // Assign operational win/loss status parameters
     if (this.pnl > 0) {
         this.status = 'WIN';
     } else if (this.pnl < 0) {
@@ -149,8 +205,6 @@ tradeJournalSchema.pre('save', function (next) {
     } else {
         this.status = 'BREAKEVEN';
     }
-
-    next();
 });
 
 const TradeJournal = mongoose.model('TradeJournal', tradeJournalSchema);

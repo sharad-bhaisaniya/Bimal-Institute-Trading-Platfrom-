@@ -29,7 +29,7 @@ exports.initiateKyc = asyncHandler(async (req, res, next) => {
   if (!user) return next(new ErrorResponse('User not found', 404));
 
   const mobile = req.body.phone || user.phone;
-  const name   = req.body.name  || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || 'User');
+  const name = req.body.name || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || 'User');
 
   if (!mobile) {
     console.warn('[KYC] ⚠️ Mobile number missing for user:', user._id);
@@ -48,28 +48,34 @@ exports.initiateKyc = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    const result = await initiateDigioKyc({ name, mobile, email: user.email });
+    // FIX: सीधे फ़्रंटएंड पेलोड से req.body.platform को कैप्चर करके भेजा जा रहा है
+    const result = await initiateDigioKyc({
+      name,
+      mobile,
+      email: user.email,
+      platform: req.body.platform || 'web'
+    });
 
     // Persist the new KYC request
     await KycVerification.create({
-      user:              user._id,
+      user: user._id,
       digio_document_id: result.document_id,
-      customer_name:     name,
-      customer_mobile:   mobile,
-      customer_email:    user.email,
-      reference_id:      result.reference_id,
-      transaction_id:    result.transaction_id,
-      status:            'initiated',
-      kyc_details:       { type: 're-kyc' },
-      raw_response:      result.raw_response,
+      customer_name: name,
+      customer_mobile: mobile,
+      customer_email: user.email,
+      reference_id: result.reference_id,
+      transaction_id: result.transaction_id,
+      status: 'initiated',
+      kyc_details: { type: 're-kyc' },
+      raw_response: result.raw_response,
     });
 
     console.log(`[KYC] ✅ KYC initiated — doc ID: ${result.document_id}`);
 
     res.status(200).json({
-      success:       true,
-      document_id:   result.document_id,
-      redirect_url:  result.redirect_url,
+      success: true,
+      document_id: result.document_id,
+      redirect_url: result.redirect_url,
     });
   } catch (error) {
     console.error('[KYC] ❌ Digio initiation error:', error);
@@ -148,14 +154,39 @@ exports.checkKycStatus = asyncHandler(async (req, res, next) => {
   }
 
   const updatedKyc = await fetchAndUpdateKycStatus(kyc.digio_document_id);
+  const finalStatus = updatedKyc?.status || user?.kyc_status || 'pending';
+
+  // For in-progress statuses, rebuild the Digio redirect_url so mobile can resume the flow
+  let resumeUrl = null;
+  const incompleteStatuses = ['requested', 'initiated', 'pending', 'approval_pending'];
+  if (incompleteStatuses.includes(finalStatus) && kyc.digio_document_id && kyc.customer_mobile) {
+    const baseUrl = credential.api_base_url?.includes('ext.digio')
+      ? 'https://ext.digio.in/#/gateway/login/'
+      : 'https://app.digio.in/#/gateway/login/';
+
+    // FIX 1: डिक्लेरेशन एरर को हटाने के लिए 'const' को परिभाषित किया गया है
+    const platform = req.query.platform || 'web';
+    let callbackUrl = '';
+
+    // FIX 2: undefined 'data.id' को बदलकर सही संदर्भ 'kyc.digio_document_id' का उपयोग किया गया है
+    if (platform === 'mobile') {
+      callbackUrl = `bimalinstituteapp://kyc-process?kyc_callback=true&digio_doc_id=${kyc.digio_document_id}`;
+    } else {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      callbackUrl = `${frontendUrl}/kyc-process?kyc_callback=true&digio_doc_id=${kyc.digio_document_id}`;
+    }
+
+    resumeUrl = `${baseUrl}${kyc.digio_document_id}/${Date.now()}/${kyc.customer_mobile}?redirect_url=${encodeURIComponent(callbackUrl)}`;
+  }
 
   res.status(200).json({
     success: true,
     digio_active: true,
-    kyc_status:     updatedKyc?.status    || user?.kyc_status || 'pending',
-    kyc_details:    updatedKyc?.kyc_details    || null,
+    kyc_status: finalStatus,
+    kyc_details: updatedKyc?.kyc_details || null,
     aadhaar_details: updatedKyc?.aadhaar_details || null,
-    raw_response:   updatedKyc?.raw_response   || null,
+    raw_response: updatedKyc?.raw_response || null,
+    resume_url: resumeUrl,
   });
 });
 
@@ -199,9 +230,9 @@ exports.getKycFullDetails = asyncHandler(async (req, res, next) => {
     success: true,
     digio_active: true,
     user,
-    kyc:             updatedKyc || kyc,
-    kyc_details:     updatedKyc?.kyc_details     || kyc.kyc_details,
-    aadhaar_details: updatedKyc?.aadhaar_details  || kyc.aadhaar_details,
-    raw_response:    updatedKyc?.raw_response     || kyc.raw_response,
+    kyc: updatedKyc || kyc,
+    kyc_details: updatedKyc?.kyc_details || kyc.kyc_details,
+    aadhaar_details: updatedKyc?.aadhaar_details || kyc.aadhaar_details,
+    raw_response: updatedKyc?.raw_response || kyc.raw_response,
   });
 });

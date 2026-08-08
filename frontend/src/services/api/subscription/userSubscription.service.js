@@ -5,6 +5,9 @@ export const userSubscriptionService = {
     getAll: (params) =>
         api.get(endpoints.userSubscriptions.getAll, { params }),
 
+    getMy: () =>
+        api.get(endpoints.userSubscriptions.getMy),
+
     getById: (id) =>
         api.get(endpoints.userSubscriptions.getById(id)),
 

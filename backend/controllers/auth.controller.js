@@ -166,3 +166,81 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Error during login', error });
   }
 };
+
+exports.sendLoginOtp = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ message: 'Phone number is required' });
+
+    const user = await User.findOne({ phone });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60000); // 10 mins
+
+    await Otp.findOneAndUpdate(
+      { phone },
+      { otp, expiresAt },
+      { upsert: true, new: true }
+    );
+
+    const { sendOtpSms } = require('../utils/smsService');
+    const smsSent = await sendOtpSms(phone, otp);
+
+    if (user.email) {
+      const { sendEmail } = require('../utils/emailService');
+      await sendEmail({
+        to: user.email,
+        subject: 'Your Login OTP - Bimal Institute',
+        html: `<h1>Login OTP</h1><p>Your OTP for login is: <b>${otp}</b>. It is valid for 10 minutes.</p>`
+      });
+    }
+
+    res.status(200).json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending OTP', error });
+  }
+};
+
+exports.verifyLoginOtp = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+
+    const otpRecord = await Otp.findOne({ phone });
+    if (!otpRecord) return res.status(400).json({ message: 'No OTP requested for this number' });
+
+    if (otpRecord.otp !== otp) return res.status(400).json({ message: 'Invalid OTP' });
+    if (new Date() > otpRecord.expiresAt) return res.status(400).json({ message: 'OTP has expired' });
+
+    const user = await User.findOne({ phone }).populate('role');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET || 'fallback_secret',
+      { expiresIn: '1d' }
+    );
+
+    user.lastLogin = new Date();
+    await user.save();
+    await Otp.deleteOne({ phone });
+
+    res.status(200).json({
+      message: 'Login successful',
+      data: {
+        accessToken: token,
+        user: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
+          email: user.email,
+          role: user.role,
+          profileImage: user.profileImage
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error during OTP verification', error });
+  }
+};

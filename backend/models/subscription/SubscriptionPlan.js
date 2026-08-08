@@ -114,8 +114,6 @@ const subscriptionPlanSchema = new mongoose.Schema(
 );
 
 // Indexes
-subscriptionPlanSchema.index({ name: 1 });
-subscriptionPlanSchema.index({ slug: 1 });
 subscriptionPlanSchema.index({ is_active: 1 });
 subscriptionPlanSchema.index({ is_featured: 1 });
 subscriptionPlanSchema.index({ display_order: 1 });

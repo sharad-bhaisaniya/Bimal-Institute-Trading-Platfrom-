@@ -3,14 +3,55 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../../components/tr
 import { Badge } from '../../../components/trading-journal/Badge';
 import { Trophy } from 'lucide-react';
 
-const BestPerformingAssets = () => {
-  const assets = [
-    { name: 'RELIANCE', trades: 45, winRate: 72, profit: 45200, avgRR: '1:2.8' },
-    { name: 'TCS', trades: 32, winRate: 68, profit: 38500, avgRR: '1:2.5' },
-    { name: 'INFY', trades: 28, winRate: 65, profit: 32100, avgRR: '1:2.3' },
-    { name: 'HDFC', trades: 38, winRate: 62, profit: 28900, avgRR: '1:2.1' },
-    { name: 'ICICI', trades: 42, winRate: 70, profit: 26500, avgRR: '1:2.4' },
-  ];
+const BestPerformingAssets = ({ trades = [] }) => {
+  const assetStats = {};
+
+  trades.forEach(trade => {
+    const assetName = trade.symbol || 'Unknown';
+    if (!assetStats[assetName]) {
+      assetStats[assetName] = {
+        name: assetName,
+        trades: 0,
+        winningTrades: 0,
+        profit: 0,
+        totalRR: 0,
+        validRRCount: 0,
+      };
+    }
+    const stat = assetStats[assetName];
+    stat.trades += 1;
+    
+    if (trade.pnl > 0 || trade.status === 'WIN' || trade.trade_result === 'Target') {
+      stat.winningTrades += 1;
+    }
+    
+    if (trade.pnl) {
+      stat.profit += trade.pnl;
+    }
+
+    if (trade.risk_reward) {
+      const parts = String(trade.risk_reward).split(':');
+      const val = parts.length === 2 ? parseFloat(parts[1]) : parseFloat(parts[0]);
+      if (!isNaN(val)) {
+        stat.totalRR += val;
+        stat.validRRCount += 1;
+      }
+    }
+  });
+
+  const assets = Object.values(assetStats).map(stat => {
+    const winRate = stat.trades > 0 ? Math.round((stat.winningTrades / stat.trades) * 100) : 0;
+    const avgRRVal = stat.validRRCount > 0 ? (stat.totalRR / stat.validRRCount).toFixed(1) : '0.0';
+    return {
+      name: stat.name,
+      trades: stat.trades,
+      winRate: winRate,
+      profit: stat.profit,
+      avgRR: `1:${avgRRVal}`
+    };
+  })
+  .sort((a, b) => b.profit - a.profit)
+  .slice(0, 5); // Show top 5 best performing assets
 
   return (
     <Card>
@@ -49,7 +90,9 @@ const BestPerformingAssets = () => {
                       {asset.winRate}%
                     </span>
                   </td>
-                  <td className="py-2 px-3 text-xs font-medium text-primary text-right">₹{asset.profit.toLocaleString()}</td>
+                  <td className={`py-2 px-3 text-xs font-medium text-right ${asset.profit >= 0 ? 'text-primary' : 'text-danger'}`}>
+                    {asset.profit >= 0 ? '+' : ''}₹{asset.profit.toLocaleString()}
+                  </td>
                   <td className="py-2 px-3 text-xs text-gray-300 text-center">{asset.avgRR}</td>
                 </tr>
               ))}

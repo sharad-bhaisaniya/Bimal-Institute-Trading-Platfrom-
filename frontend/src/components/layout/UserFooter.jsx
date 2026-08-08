@@ -30,8 +30,12 @@ const UserFooter = () => {
           </div>
           <div className={styles.linkGroup}>
             <h4>Legal</h4>
-            <Link to="/terms">Terms of Service</Link>
-            <Link to="/privacy">Privacy Policy</Link>
+            <Link to="/terms-of-service">Terms of Service</Link>
+            <Link to="/privacy-policy">Privacy Policy</Link>
+            <Link to="/fee-policy">Fee Policy</Link>
+            <Link to="/refund-policy">Refund Policy</Link>
+            <Link to="/grievance-policy">Grievance Policy</Link>
+            <Link to="/disclaimer">Disclaimer</Link>
           </div>
         </div>
       </div>

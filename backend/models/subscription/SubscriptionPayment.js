@@ -101,7 +101,6 @@ const subscriptionPaymentSchema = new mongoose.Schema(
         invoice_number: {
             type: String,
             trim: true,
-            default: "",
             unique: true,
             sparse: true,
         },
@@ -153,10 +152,6 @@ const subscriptionPaymentSchema = new mongoose.Schema(
 
 /* -------------------- Indexes -------------------- */
 
-subscriptionPaymentSchema.index({ user: 1 });
-subscriptionPaymentSchema.index({ subscription: 1 });
-subscriptionPaymentSchema.index({ subscription_plan: 1 });
-
 subscriptionPaymentSchema.index({
     payment_status: 1,
     payment_gateway: 1,
@@ -166,14 +161,10 @@ subscriptionPaymentSchema.index({ paid_at: -1 });
 
 /* -------------------- Validation -------------------- */
 
-subscriptionPaymentSchema.pre("save", function (next) {
+subscriptionPaymentSchema.pre("save", function () {
     if (this.refund_amount > this.amount) {
-        return next(
-            new Error("Refund amount cannot be greater than paid amount.")
-        );
+        throw new Error("Refund amount cannot be greater than paid amount.");
     }
-
-    next();
 });
 
 const SubscriptionPayment = mongoose.model(

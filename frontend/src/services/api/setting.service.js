@@ -91,4 +91,22 @@ export const settingService = {
     const res = await api.delete(endpoints.settings.youtube.delete(id));
     return res.data;
   },
+
+  // Zoom
+  getAllZoom: async () => {
+    const res = await api.get(endpoints.settings.zoom.getAll);
+    return res.data;
+  },
+  createZoom: async (data) => {
+    const res = await api.post(endpoints.settings.zoom.create, data);
+    return res.data;
+  },
+  updateZoom: async (id, data) => {
+    const res = await api.put(endpoints.settings.zoom.update(id), data);
+    return res.data;
+  },
+  deleteZoom: async (id) => {
+    const res = await api.delete(endpoints.settings.zoom.delete(id));
+    return res.data;
+  },
 };

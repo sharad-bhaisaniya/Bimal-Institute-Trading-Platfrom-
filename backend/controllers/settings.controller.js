@@ -2,6 +2,7 @@ const SmsSetting = require('../models/SmsSetting');
 const RazorpaySetting = require('../models/RazorpaySetting');
 const DigioSetting = require('../models/DigioSetting');
 const YoutubeSetting = require('../models/YoutubeSetting');
+const ZoomSetting = require('../models/ZoomSetting');
 
 const createCrudController = (Model, configKey) => ({
   getAll: async (req, res) => {
@@ -53,3 +54,4 @@ exports.sms = createCrudController(SmsSetting, 'smsConfigs');
 exports.razorpay = createCrudController(RazorpaySetting, 'razorpayConfigs');
 exports.digio = createCrudController(DigioSetting, 'digioConfigs');
 exports.youtube = createCrudController(YoutubeSetting, 'youtubeConfigs');
+exports.zoom = createCrudController(ZoomSetting, 'zoomConfigs');

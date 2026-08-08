@@ -47,10 +47,11 @@ const getBaseUrl = (credential) => {
 
 /**
  * Creates a new KYC request on Digio with the given template.
- * Returns: { document_id, redirect_url } on success, throws on failure.
+ * Added support for dynamic application platforms (Web vs Mobile/Expo)[cite: 5]
+ * Returns: { document_id, redirect_url } on success, throws on failure.[cite: 5]
  */
-const initiateDigioKyc = async ({ name, mobile, email }) => {
-  console.log(`[Digio] 🚀 Initiating KYC for mobile: ${mobile}, name: ${name}`);
+const initiateDigioKyc = async ({ name, mobile, email, platform = 'web' }) => {
+  console.log(`[Digio] 🚀 Initiating KYC for mobile: ${mobile}, name: ${name}, platform: ${platform}`);
 
   const credential = await getCredential();
   if (!credential) throw new Error('Digio configuration missing or inactive');
@@ -94,15 +95,22 @@ const initiateDigioKyc = async ({ name, mobile, email }) => {
     throw new Error('Digio response missing document id');
   }
 
-  // Build redirect URL
+  // Build redirect URL[cite: 5]
   const redirectBase = baseUrl.includes('ext.digio')
     ? 'https://ext.digio.in/#/gateway/login/'
     : 'https://app.digio.in/#/gateway/login/';
 
-  const frontendUrl =
-    process.env.FRONTEND_URL || 'http://localhost:5173';
+  // ── FIX: Dynamic Handling for Mobile and Desktop Redirection ──
+  let callbackUrl = '';
 
-  const callbackUrl = `${frontendUrl}/kyc-process?kyc_callback=true&digio_doc_id=${data.id}`;
+  if (platform === 'mobile') {
+    // मोबाइल ऐप (Expo Go) के लिए डीप-लिंक यूआरएल ताकि रिडायरेक्शन ब्रेक न हो
+    callbackUrl = `bimalinstituteapp://kyc-process?kyc_callback=true&digio_doc_id=${data.id}`;
+  } else {
+    // डेस्कटॉप/वेब के लिए पुराना फॉलबैक[cite: 5]
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    callbackUrl = `${frontendUrl}/kyc-process?kyc_callback=true&digio_doc_id=${data.id}`;
+  }
 
   const redirectUrl = `${redirectBase}${data.id}/${Date.now()}/${mobile}?redirect_url=${encodeURIComponent(
     callbackUrl
@@ -197,13 +205,7 @@ const downloadFileFromDigio = async (fileId) => {
 
 /**
  * Saves a KYC image (aadhaar / selfie / signature / pan) to local disk,
- * updates the KycVerification record with the public URL, and returns the URL.
- *
- * @param {string|null} fileId        - Digio file ID (null if providedBuffer is given)
- * @param {'aadhaar'|'selfie'|'signature'|'pan'} type
- * @param {ObjectId}    userId
- * @param {Object}      kycModel      - KycVerification document
- * @param {Buffer|null} providedBuffer - Pre-fetched buffer (e.g. from base64 in response)
+ * updates the KycVerification record with the public URL, and returns the URL.[cite: 5]
  */
 const storeMediaLocally = async (fileId, type, userId, kycModel, providedBuffer = null) => {
   console.log(`[Digio] 💾 Storing ${type} media for user ${userId} (fileId: ${fileId})`);
@@ -234,8 +236,8 @@ const storeMediaLocally = async (fileId, type, userId, kycModel, providedBuffer 
     const publicUrl = `/uploads/kyc/${userId}/${fileName}`;
     console.log(`[Digio] ✅ ${type} image stored at: ${publicUrl}`);
 
-    // Update KycVerification image field
-    const updateField = `${type}_image`; // aadhaar_image | selfie_image | signature_image | pan_image
+    // Update KycVerification image field[cite: 5]
+    const updateField = `${type}_image`;
     const updatedDetails = { ...(kycModel.kyc_details || {}) };
     updatedDetails[`${type}_local_path`] = publicUrl;
 
@@ -255,16 +257,6 @@ const storeMediaLocally = async (fileId, type, userId, kycModel, providedBuffer 
 // SERVICE: Fetch status from Digio, auto-approve, store documents
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Main orchestrator:
- *  1. Calls Digio's status API for the given document ID.
- *  2. Auto-approves if status is approval_pending / initiated / requested.
- *  3. Parses Aadhaar, PAN, selfie, signature from the actions array.
- *  4. Updates KycVerification + User records.
- *  5. Downloads & stores document images locally.
- *
- * Returns the latest KycVerification document (or null on failure).
- */
 const fetchAndUpdateKycStatus = async (digioDocId) => {
   console.log(`[Digio] 🔄 Fetching KYC status for doc ID: ${digioDocId}`);
 
@@ -442,7 +434,6 @@ const fetchAndUpdateKycStatus = async (digioDocId) => {
       await storeMediaLocally(kycDetails.pan_file, 'pan', kyc.user, kyc);
     }
 
-    // Return the freshest DB record
     return await KycVerification.findById(kyc._id);
   } catch (error) {
     console.error(

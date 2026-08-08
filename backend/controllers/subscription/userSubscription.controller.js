@@ -164,6 +164,25 @@ const updateUserSubscriptionStatus = async (req, res) => {
 };
 
 
+// Get my active subscriptions
+const getMySubscriptions = async (req, res) => {
+    try {
+        const userId = req.user?._id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        const subs = await UserSubscription.find({ user: userId, status: 'active' })
+            .sort({ createdAt: -1 })
+            .populate('subscription_plan')
+            .lean();
+        res.json({ success: true, data: subs });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
 module.exports = {
     createUserSubscription,
     getAllUserSubscriptions,
@@ -171,4 +190,5 @@ module.exports = {
     updateUserSubscription,
     deleteUserSubscription,
     updateUserSubscriptionStatus,
+    getMySubscriptions,
 };

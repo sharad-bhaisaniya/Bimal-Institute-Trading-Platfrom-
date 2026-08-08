@@ -18,6 +18,7 @@ import SmsCredentials from './pages/dashboard/credentials/SmsCredentials';
 import RazorpayCredentials from './pages/dashboard/credentials/RazorpayCredentials';
 import DigioCredentials from './pages/dashboard/credentials/DigioCredentials';
 import YoutubeCredentials from './pages/dashboard/credentials/YoutubeCredentials';
+import ZoomCredentials from './pages/dashboard/credentials/ZoomCredentials';
 import BlogsList from './pages/dashboard/blogs/BlogsList';
 import BlogForm from './pages/dashboard/blogs/BlogForm';
 import BlogCategories from './pages/dashboard/blogs/BlogCategories';
@@ -42,6 +43,16 @@ import TradingJournal from './pages/trading-journal/TradingJournal';
 import UserDashboardLayout from './layouts/UserDashboardLayout';
 import Profile from './pages/trading-journal/Profile';
 import BrokerManagement from './pages/dashboard/tradeBroker/BrokerManagement';
+import FeePolicy from './pages/public/policies/FeePolicy';
+import GrievancePolicy from './pages/public/policies/GrievancePolicy';
+import PrivacyPolicy from './pages/public/policies/PrivacyPolicy';
+import RefundPolicy from './pages/public/policies/RefundPolicy';
+import TermsOfService from './pages/public/policies/TermsOfService';
+import Disclaimer from './pages/public/policies/Disclaimer';
+import ZoomMeetingsList from './pages/dashboard/zoom/ZoomMeetingsList';
+import ZoomMeetingForm from './pages/dashboard/zoom/ZoomMeetingForm';
+import ZoomMeetingView from './pages/dashboard/zoom/ZoomMeetingView';
+import UserSubscriptions from './pages/trading-journal/UserSubscriptions';
 
 function App() {
   return (
@@ -63,6 +74,7 @@ function App() {
           <Route path="credentials/razorpay" element={<RazorpayCredentials />} />
           <Route path="credentials/digio" element={<DigioCredentials />} />
           <Route path="credentials/youtube" element={<YoutubeCredentials />} />
+          <Route path="credentials/zoom" element={<ZoomCredentials />} />
           <Route path="blogs" element={<BlogsList />} />
           <Route path="blogs/add" element={<BlogForm />} />
           <Route path="blogs/edit/:id" element={<BlogForm />} />
@@ -75,6 +87,10 @@ function App() {
           <Route path="courses/import-youtube" element={<YouTubeImport />} />
           <Route path="notifications" element={<NotificationCenter />} />
           <Route path="chat" element={<AdminChat />} />
+          
+          <Route path="zoom-meetings" element={<ZoomMeetingsList />} />
+          <Route path="zoom-meetings/schedule" element={<ZoomMeetingForm />} />
+          <Route path="zoom-meetings/:id" element={<ZoomMeetingView />} />
 
 
           <Route path="/dashboard/subscriptions" element={<SubscriptionPlansList />} />
@@ -101,11 +117,20 @@ function App() {
           <Route path="contact" element={<Contact />} />
           <Route path="kyc" element={<Kyc />} />
           <Route path="chat" element={<Chat />} />
+          
+          <Route path="fee-policy" element={<FeePolicy />} />
+          <Route path="grievance-policy" element={<GrievancePolicy />} />
+          <Route path="privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="refund-policy" element={<RefundPolicy />} />
+          <Route path="terms-of-service" element={<TermsOfService />} />
+          <Route path="disclaimer" element={<Disclaimer />} />
         </Route>
         <Route path="/user" element={<UserDashboardLayout />}>
           <Route path="journal" element={<TradingJournal />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="subscriptions" element={<UserSubscriptions />} />
         </Route>
+        <Route path="/journal" element={<Navigate to="/user/journal" replace />} />
 
 
         <Route path="/kyc-process" element={<KycProcess />} />

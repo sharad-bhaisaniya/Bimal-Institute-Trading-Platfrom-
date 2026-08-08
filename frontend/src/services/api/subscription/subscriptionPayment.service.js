@@ -19,4 +19,10 @@ export const subscriptionPaymentService = {
 
     delete: (id) =>
         api.delete(endpoints.subscriptionPayments.delete(id)),
+
+    createOrder: (data) =>
+        api.post(endpoints.subscriptionPayments.createOrder, data),
+        
+    verifyPayment: (data) =>
+        api.post(endpoints.subscriptionPayments.verify, data),
 };
